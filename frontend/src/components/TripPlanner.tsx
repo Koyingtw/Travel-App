@@ -11,13 +11,15 @@ import {
   Upload,
   ArrowDownUp,
   Clock,
-  PlusCircle
+  PlusCircle,
+  Hotel
 } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import { BacklogPlaceCard } from './PlaceCards';
 import AddPlaceModal from './AddPlaceModal';
 import ImportGoogleMapsModal from './ImportGoogleMapsModal';
 import AddCustomActivityModal from './AddCustomActivityModal';
+import AccommodationModal from './AccommodationModal';
 import TimelineSchedule from './TimelineSchedule';
 import type { BacklogPlace } from '../types';
 
@@ -34,11 +36,13 @@ export default function TripPlanner() {
     updateItineraryItem,
     optimizeRoute,
     addCustomActivity,
+    setDayAccommodation,
   } = useTripStore();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isCustomActivityModalOpen, setIsCustomActivityModalOpen] = useState(false);
+  const [isAccommodationModalOpen, setIsAccommodationModalOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category'>('name');
   const [scheduleStartHour, setScheduleStartHour] = useState(6);
@@ -65,12 +69,23 @@ export default function TripPlanner() {
   const handleAddToItinerary = useCallback((place: BacklogPlace) => {
     if (!selectedDate) return;
     
-    // Calculate time based on last item or default to 09:00
+    // Find next available time slot to avoid overlapping
     let time = '09:00';
     if (currentDayItinerary && currentDayItinerary.items.length > 0) {
-      const lastItem = currentDayItinerary.items[currentDayItinerary.items.length - 1];
+      // Sort items by time
+      const sortedItems = [...currentDayItinerary.items].sort((a, b) => a.time.localeCompare(b.time));
+      const lastItem = sortedItems[sortedItems.length - 1];
+      
+      // Use end_time of last item as start time for new item
       if (lastItem.end_time) {
         time = lastItem.end_time;
+      } else {
+        // If no end_time, calculate based on start time + duration
+        const [hours, minutes] = lastItem.time.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes + lastItem.duration;
+        const newHours = Math.floor(totalMinutes / 60);
+        const newMinutes = totalMinutes % 60;
+        time = `${newHours.toString().padStart(2, '0')}:${newMinutes.toString().padStart(2, '0')}`;
       }
     }
     moveToItinerary(place, selectedDate, time);
@@ -104,6 +119,31 @@ export default function TripPlanner() {
     setIsCustomActivityModalOpen(false);
   }, [selectedDate, currentTrip, addCustomActivity]);
 
+  const handleSetAccommodation = useCallback(async (accommodation: {
+    place_name: string;
+    address?: string;
+    coordinates?: any;
+    notes?: string;
+    time: string;
+  }) => {
+    if (!selectedDate) return;
+    
+    await setDayAccommodation(selectedDate, {
+      place_name: accommodation.place_name,
+      address: accommodation.address,
+      coordinates: accommodation.coordinates,
+      notes: accommodation.notes,
+      time: accommodation.time,
+      end_time: '23:59', // 住宿結束時間設為當日最後
+      category: 'hotel',
+      duration: 600, // 10小時（僅供顯示）
+      completed: false,
+      is_custom: true,
+    });
+    
+    setIsAccommodationModalOpen(false);
+  }, [selectedDate, setDayAccommodation]);
+
   const handleDateChange = (direction: 'prev' | 'next') => {
     if (!currentTrip || !selectedDate) return;
     
@@ -127,7 +167,7 @@ export default function TripPlanner() {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Backlog Panel */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
@@ -206,7 +246,7 @@ export default function TripPlanner() {
         </div>
 
         {/* Itinerary Panel */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
             {/* Date Navigation */}
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
@@ -255,6 +295,15 @@ export default function TripPlanner() {
               </div>
               <div className="flex items-center space-x-2">
                 <button
+                  onClick={() => setIsAccommodationModalOpen(true)}
+                  disabled={!selectedDate}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  title="設定住宿"
+                >
+                  <Hotel size={16} />
+                  <span>住宿</span>
+                </button>
+                <button
                   onClick={() => setIsCustomActivityModalOpen(true)}
                   disabled={!selectedDate}
                   className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
@@ -283,6 +332,7 @@ export default function TripPlanner() {
               {currentDayItinerary && currentDayItinerary.items.length > 0 ? (
                 <TimelineSchedule
                   items={currentDayItinerary.items}
+                  accommodation={currentDayItinerary.accommodation}
                   onUpdateItem={(itemId, updates) => 
                     selectedDate && updateItineraryItem(selectedDate, itemId, updates)
                   }
@@ -342,6 +392,20 @@ export default function TripPlanner() {
         isOpen={isCustomActivityModalOpen}
         onClose={() => setIsCustomActivityModalOpen(false)}
         onAdd={handleAddCustomActivity}
+      />
+
+      {/* Accommodation Modal */}
+      <AccommodationModal
+        isOpen={isAccommodationModalOpen}
+        onClose={() => setIsAccommodationModalOpen(false)}
+        onSave={handleSetAccommodation}
+        currentAccommodation={currentDayItinerary?.accommodation ? {
+          place_name: currentDayItinerary.accommodation.place_name,
+          address: currentDayItinerary.accommodation.address,
+          coordinates: currentDayItinerary.accommodation.coordinates,
+          notes: currentDayItinerary.accommodation.notes,
+          time: currentDayItinerary.accommodation.time,
+        } : null}
       />
     </>
   );

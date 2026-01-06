@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { Clock, GripVertical, Trash2, MapPin } from 'lucide-react';
+import { Clock, GripVertical, Trash2, MapPin, Hotel } from 'lucide-react';
 import type { ItineraryItem } from '../types';
 import RouteInfo from './RouteInfo';
 
@@ -8,6 +8,7 @@ interface TimelineScheduleProps {
   onUpdateItem: (itemId: string, updates: Partial<ItineraryItem>) => void;
   onRemoveItem: (itemId: string, isCustom?: boolean) => void;
   onToggleComplete: (itemId: string) => void;
+  accommodation?: ItineraryItem;
   startHour?: number; // 開始時間（小時），預設 6
   endHour?: number;   // 結束時間（小時），預設 24
 }
@@ -28,6 +29,7 @@ export default function TimelineSchedule({
   onUpdateItem,
   onRemoveItem,
   onToggleComplete,
+  accommodation,
   startHour = 6,
   endHour = 24,
 }: TimelineScheduleProps) {
@@ -194,12 +196,19 @@ export default function TimelineSchedule({
   // 計算總高度
   const totalHeight = (endHour - startHour) * HOUR_HEIGHT;
 
-  // 按時間排序的項目列表（用於顯示路線資訊）
+  // 按時間排序的項目列表（用於顯示路線資訊），排除住宿
   const sortedItems = useMemo(() => {
     return [...items]
-      .filter(item => !item.is_custom) // 排除自訂活動
+      .filter(item => !item.is_custom && !item.id.startsWith('accommodation-')) // 排除自訂活動和住宿
       .sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
   }, [items]);
+
+  // 分離住宿和一般項目
+  const { regularItems, accommodationItem } = useMemo(() => {
+    const regular = items.filter(item => !item.id.startsWith('accommodation-'));
+    const accom = items.find(item => item.id.startsWith('accommodation-')) || accommodation;
+    return { regularItems: regular, accommodationItem: accom };
+  }, [items, accommodation]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -243,7 +252,7 @@ export default function TimelineSchedule({
 
           {/* 行程項目 */}
           <div className="relative" style={{ height: `${totalHeight}px` }}>
-            {items.map((item) => {
+            {regularItems.map((item) => {
               const { top, height, startTime, endTime } = getItemPosition(item);
               const isDragging = dragState?.itemId === item.id;
 
@@ -351,17 +360,70 @@ export default function TimelineSchedule({
               );
             })}
           </div>
+
+          {/* 住宿顯示在底部 */}
+          {accommodationItem && (
+            <div className="mt-4 mx-2 mb-2">
+              <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-4">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div className="px-3 py-3">
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Hotel size={16} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                            {accommodationItem.place_name}
+                          </h4>
+                          <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+                            住宿
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => onRemoveItem(accommodationItem.id, true)}
+                        className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
+                        title="移除住宿"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+
+                    {accommodationItem.address && (
+                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mb-2">
+                        <MapPin size={10} />
+                        <span className="truncate">{accommodationItem.address}</span>
+                      </div>
+                    )}
+
+                    {accommodationItem.notes && (
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                        {accommodationItem.notes}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 text-xs">
+                      <Clock size={12} className="text-gray-500 dark:text-gray-400" />
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
+                        {accommodationItem.time}
+                      </span>
+                      <span className="text-gray-400 dark:text-gray-500">入住</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* 右側邊欄 - 路線資訊 */}
-        <div className="w-48 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto" style={{ maxHeight: `${totalHeight + 100}px` }}>
-          <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden" style={{ maxHeight: `${totalHeight + 100}px` }}>
+          <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <MapPin size={14} />
               路線資訊
             </h4>
           </div>
-          <div className="p-3 space-y-3">
+          <div className="p-2 space-y-3">
             {sortedItems.map((item, index) => {
               const nextItem = index < sortedItems.length - 1 ? sortedItems[index + 1] : null;
               const showRouteInfo = nextItem && item.coordinates && nextItem.coordinates;
@@ -369,12 +431,12 @@ export default function TimelineSchedule({
               if (!showRouteInfo) return null;
               
               return (
-                <div key={`route-${item.id}`} className="space-y-2">
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">{item.place_name}</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span>↓</span>
-                      <span>{nextItem.place_name}</span>
+                <div key={`route-${item.id}`} className="space-y-2 min-w-0">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                    <div className="font-medium text-gray-900 dark:text-gray-100 truncate">{item.place_name}</div>
+                    <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                      <span className="flex-shrink-0">↓</span>
+                      <span className="truncate">{nextItem.place_name}</span>
                     </div>
                   </div>
                   <RouteInfo
@@ -390,10 +452,64 @@ export default function TimelineSchedule({
                 </div>
               );
             })}
+
+            {/* 最後一個景點到住宿的路線 */}
+            {sortedItems.length > 0 && accommodationItem && sortedItems[sortedItems.length - 1].coordinates && accommodationItem.coordinates && (
+              <div className="space-y-2 pt-3 border-t-2 border-dashed border-gray-300 dark:border-gray-600 min-w-0">
+                <div className="text-xs text-gray-600 dark:text-gray-400 min-w-0">
+                  <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                    {sortedItems[sortedItems.length - 1].place_name}
+                  </div>
+                  <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                    <span className="flex-shrink-0">↓</span>
+                    <div className="flex items-center gap-1 min-w-0">
+                      <Hotel size={10} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                      <span className="text-indigo-600 dark:text-indigo-400 truncate">{accommodationItem.place_name}</span>
+                    </div>
+                  </div>
+                </div>
+                <RouteInfo
+                  from={{
+                    name: sortedItems[sortedItems.length - 1].place_name,
+                    coordinates: sortedItems[sortedItems.length - 1].coordinates,
+                  }}
+                  to={{
+                    name: accommodationItem.place_name,
+                    coordinates: accommodationItem.coordinates,
+                  }}
+                />
+              </div>
+            )}
+
+            {/* 無住宿時的住宿資訊顯示 */}
+            {sortedItems.length > 0 && accommodationItem && (!sortedItems[sortedItems.length - 1].coordinates || !accommodationItem.coordinates) && (
+              <div className="pt-3 border-t-2 border-dashed border-gray-300 dark:border-gray-600">
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 rounded-lg p-2">
+                  <div className="flex items-center gap-2 text-xs">
+                    <Hotel size={12} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {accommodationItem.place_name}
+                      </div>
+                      <div className="text-indigo-600 dark:text-indigo-400 mt-0.5">
+                        住宿
+                      </div>
+                    </div>
+                  </div>
+                  {accommodationItem.address && (
+                    <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1 ml-5">
+                      <MapPin size={8} />
+                      <span className="truncate text-[10px]">{accommodationItem.address}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {sortedItems.filter((item, index) => {
               const nextItem = index < sortedItems.length - 1 ? sortedItems[index + 1] : null;
               return nextItem && item.coordinates && nextItem.coordinates;
-            }).length === 0 && (
+            }).length === 0 && !accommodationItem && (
               <div className="text-center py-8 text-gray-400 dark:text-gray-600 text-sm">
                 <MapPin size={32} className="mx-auto mb-2 opacity-50" />
                 <p>無路線資訊</p>

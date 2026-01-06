@@ -25,6 +25,7 @@ interface TripStore {
   moveToItinerary: (place: BacklogPlace, date: string, time: string) => Promise<void>;
   moveToBacklog: (item: ItineraryItem, date: string) => Promise<void>;
   addCustomActivity: (date: string, activity: Omit<ItineraryItem, 'id' | 'order'>) => Promise<void>;
+  setDayAccommodation: (date: string, accommodation: Omit<ItineraryItem, 'id' | 'order'>) => Promise<void>;
   reorderItinerary: (date: string, items: ItineraryItem[]) => Promise<void>;
   updateItineraryItem: (date: string, itemId: string, updates: Partial<ItineraryItem>) => Promise<void>;
   removeItineraryItem: (date: string, itemId: string) => Promise<void>;
@@ -292,6 +293,56 @@ export const useTripStore = create<TripStore>((set, get) => ({
     }
   },
 
+  setDayAccommodation: async (date, accommodation) => {
+    const { currentTrip } = get();
+    if (!currentTrip) return;
+
+    const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
+    if (!dayItinerary) return;
+
+    // 建立住宿項目
+    const newAccommodation: ItineraryItem = {
+      ...accommodation,
+      id: `accommodation-${Date.now()}`,
+      order: 9999, // 最後排序
+    };
+
+    // 移除舊的住宿（如果存在）
+    const itemsWithoutOldAccommodation = dayItinerary.items.filter(
+      (item) => !item.id.startsWith('accommodation-')
+    );
+
+    // 加入新住宿
+    const updatedItems = [...itemsWithoutOldAccommodation, newAccommodation];
+
+    const updatedItinerary = currentTrip.itinerary.map((day) => {
+      if (day.date === date) {
+        return {
+          ...day,
+          items: updatedItems,
+          accommodation: newAccommodation, // 同時存在 accommodation 欄位供前端使用
+        };
+      }
+      return day;
+    });
+
+    set({
+      currentTrip: {
+        ...currentTrip,
+        itinerary: updatedItinerary,
+      },
+    });
+
+    try {
+      // 使用標準的 updateDayItinerary API
+      await tripApi.updateDayItinerary(currentTrip._id, date, updatedItems);
+      toast.success('已設定住宿');
+    } catch (error) {
+      toast.error('設定住宿失敗');
+      console.error('Accommodation error:', error);
+    }
+  },
+
   reorderItinerary: async (date, items) => {
     const { currentTrip } = get();
     if (!currentTrip) return;
@@ -366,23 +417,29 @@ export const useTripStore = create<TripStore>((set, get) => ({
     
     if (!itemToRemove) return;
 
-    // 檢查是否為自訂活動
+    // 檢查是否為自訂活動或住宿
     const isCustomActivity = itemToRemove.is_custom;
+    const isAccommodation = itemId.startsWith('accommodation-');
 
     // 從行程中移除
     const updatedItinerary = currentTrip.itinerary.map((day) => {
       if (day.date === date) {
-        return {
+        const updatedDay = {
           ...day,
           items: day.items.filter((i) => i.id !== itemId),
         };
+        // 如果移除的是住宿，清除 accommodation 欄位
+        if (isAccommodation) {
+          delete updatedDay.accommodation;
+        }
+        return updatedDay;
       }
       return day;
     });
 
     // 如果不是自訂活動，轉換為候選景點
     let newBacklogPlaces = currentTrip.backlog_places;
-    if (!isCustomActivity) {
+    if (!isCustomActivity && !isAccommodation) {
       const newPlace: BacklogPlace = {
         id: `backlog-${Date.now()}`,
         name: itemToRemove.place_name,
@@ -411,11 +468,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
         await tripApi.updateDayItinerary(currentTrip._id, date, updatedDay.items);
       }
       
-      // 如果不是自訂活動，添加到候選清單
-      if (!isCustomActivity && newBacklogPlaces.length > currentTrip.backlog_places.length) {
+      // 如果不是自訂活動或住宿，添加到候選清單
+      if (!isCustomActivity && !isAccommodation && newBacklogPlaces.length > currentTrip.backlog_places.length) {
         const newPlace = newBacklogPlaces[newBacklogPlaces.length - 1];
         await tripApi.addBacklogPlace(currentTrip._id, newPlace);
         toast.success('已移回候選景點');
+      } else if (isAccommodation) {
+        toast.success('已移除住宿');
       } else {
         toast.success('已刪除活動');
       }

@@ -62,6 +62,7 @@ export interface DayItinerary {
   items: ItineraryItem[];
   daily_notes: string;
   budget_items: BudgetItem[];
+  accommodation?: ItineraryItem; // 每日住宿
   weather?: {
     temp?: number;
     condition?: string;
