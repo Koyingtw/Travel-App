@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['travel.koying.tw'],
     port: 3000,
     host: true,
     proxy: {
