@@ -114,6 +114,8 @@ export default function TripPlanner() {
       category: activity.category,
       notes: activity.notes,
       is_custom: true,
+      duration: 60,
+      completed: false,
     });
     
     setIsCustomActivityModalOpen(false);
@@ -342,8 +344,6 @@ export default function TripPlanner() {
                         // 自訂活動直接刪除
                         const dayItinerary = currentDayItinerary;
                         if (dayItinerary) {
-                          const updatedItems = dayItinerary.items.filter(i => i.id !== itemId);
-                          // 需要實現一個直接刪除的 API
                           removeItineraryItem(selectedDate, itemId);
                         }
                       } else {
@@ -377,7 +377,7 @@ export default function TripPlanner() {
       <AddPlaceModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onAdd={(place: BacklogPlace) => addBacklogPlace(place)}
+        onAdd={(place) => addBacklogPlace(place)}
       />
 
       {/* Import Google Maps Modal */}

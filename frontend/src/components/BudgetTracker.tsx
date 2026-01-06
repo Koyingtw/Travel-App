@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, DollarSign, Check, X, PieChart } from 'lucide-react';
+import { Plus, DollarSign, Check } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import { tripApi } from '../services/api';
 import type { BudgetItem } from '../types';

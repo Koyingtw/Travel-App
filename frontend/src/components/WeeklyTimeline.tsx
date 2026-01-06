@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { format, parseISO, addDays, isSameDay } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { Clock, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Trip, ItineraryItem } from '../types';

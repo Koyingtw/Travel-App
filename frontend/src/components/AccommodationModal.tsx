@@ -3,6 +3,13 @@ import { X, Hotel, Clock, MapPin, Check } from 'lucide-react';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import type { Coordinates } from '../types';
 
+interface PlaceResult {
+  name: string;
+  address: string;
+  coordinates?: Coordinates;
+  rating?: number;
+}
+
 interface AccommodationModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -59,19 +66,16 @@ export default function AccommodationModal({
     }
   }, [currentAccommodation, isOpen]);
 
-  const handlePlaceSelect = (place: {
-    name: string;
-    address: string;
-    coordinates: Coordinates;
-    rating?: number;
-  }) => {
-    setFormData({
-      ...formData,
-      place_name: place.name,
-      address: place.address,
-      coordinates: place.coordinates,
-    });
-    setPlaceSelected(true);
+  const handlePlaceSelect = (place: PlaceResult) => {
+    if (place.coordinates) {
+      setFormData({
+        ...formData,
+        place_name: place.name,
+        address: place.address,
+        coordinates: place.coordinates,
+      });
+      setPlaceSelected(true);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {

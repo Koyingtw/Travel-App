@@ -5,6 +5,10 @@ interface PlaceResult {
   placeId: string;
   name: string;
   address: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
   lat: number;
   lng: number;
   types: string[];
@@ -42,7 +46,7 @@ export default function PlaceAutocomplete({
   const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
   const placesService = useRef<google.maps.places.PlacesService | null>(null);
   const sessionToken = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimer = useRef<number | null>(null);
 
   // Initialize Google Places services
   useEffect(() => {
@@ -139,6 +143,10 @@ export default function PlaceAutocomplete({
             placeId: place.place_id || prediction.place_id,
             name: place.name || prediction.structured_formatting.main_text,
             address: place.formatted_address || prediction.description,
+            coordinates: {
+              lat: place.geometry?.location?.lat() || 0,
+              lng: place.geometry?.location?.lng() || 0,
+            },
             lat: place.geometry?.location?.lat() || 0,
             lng: place.geometry?.location?.lng() || 0,
             types: place.types || [],

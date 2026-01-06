@@ -9,7 +9,7 @@ export default function ExchangePage() {
   const [fromCurrency, setFromCurrency] = useState('CAD');
   const [toCurrency, setToCurrency] = useState('TWD');
 
-  const { data: currencies, isLoading: isLoadingCurrencies } = useQuery({
+  const { data: currencies } = useQuery({
     queryKey: ['currencies'],
     queryFn: exchangeApi.getCurrencies,
   });

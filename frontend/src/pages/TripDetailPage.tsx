@@ -97,7 +97,6 @@ export default function TripDetailPage() {
             {/* Day Selector Pills */}
             <div className="hidden md:flex items-center space-x-2 overflow-x-auto max-w-xl">
               {currentTrip.itinerary.slice(0, 7).map((day, index) => {
-                const date = parseISO(day.date);
                 const isSelected = selectedDate === day.date;
                 return (
                   <button

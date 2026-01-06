@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Trip, BacklogPlace, ItineraryItem, DayItinerary } from '../types';
+import type { Trip, BacklogPlace, ItineraryItem } from '../types';
 import { tripApi, routeApi } from '../services/api';
 import toast from 'react-hot-toast';
 
