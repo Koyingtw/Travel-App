@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>改良版行程規劃器（支援拖曳排序 + 自動優化）</title>
+    <style>
+        #map { height: 500px; width: 100%; }
+        #itinerary { margin-top: 20px; }
+        .pac-container { z-index: 10000; }
+        .waypoint { 
+            margin-top: 10px; 
+            padding: 5px; 
+            border: 1px solid #ccc; 
+            cursor: move; 
+            background: #f9f9f9; 
+        }
+        .waypoint.dragging { opacity: 0.5; }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtUmp4ERfYhqHWpLkEgcppq_i77_gY560&libraries=places"></script>
+</head>
+<body>
+    <h1>行程安排軟體（支援拖曳排序 + 自動優化）</h1>
+    <label>起點：</label><input id="origin" type="text" placeholder="例如：台北車站, 台灣"><br><br>
+    <label>終點：</label><input id="destination" type="text" placeholder="例如：台北101, 台灣"><br><br>
+    <h3>中間點（可拖曳排序）</h3>
+    <div id="waypoints" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <button onclick="addWaypoint()">新增中間點</button>
+    <button onclick="calculateRoute()">規劃路線（自動優化最短路徑）</button>
+    <div id="map"></div>
+    <div id="itinerary"></div>
+    <div id="error" style="color:red; margin-top:10px;"></div>
+
+    <script>
+        let map, directionsService, directionsRenderer;
+        let waypoints = [];
+        let autocompleteOrigin, autocompleteDest, autocompleteWaypoints = [];
+
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), { zoom: 8, center: { lat: 25.033, lng: 121.565 } });
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            // 為起點和終點加自動完成
+            autocompleteOrigin = new google.maps.places.Autocomplete(document.getElementById("origin"));
+            autocompleteDest = new google.maps.places.Autocomplete(document.getElementById("destination"));
+        }
+
+        function addWaypoint() {
+            const div = document.createElement("div");
+            div.className = "waypoint";
+            div.draggable = true;
+            div.ondragstart = drag;
+            const input = document.createElement("input");
+            input.type = "text";
+            input.placeholder = "中間景點，例如：故宮博物院, 台灣";
+            div.appendChild(input);
+            document.getElementById("waypoints").appendChild(div);
+
+            // 為新中間點加自動完成
+            const autocomplete = new google.maps.places.Autocomplete(input);
+            autocompleteWaypoints.push(autocomplete);
+        }
+
+        // Drag and Drop 功能
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.target.classList.add("dragging");
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            if (draggedElement) {
+                draggedElement.classList.remove("dragging");
+                ev.target.closest("#waypoints").insertBefore(draggedElement, ev.target.closest(".waypoint"));
+            }
+        }
+
+        // 為每個 waypoint div 加 ID（在 addWaypoint 後呼叫）
+        function assignWaypointIds() {
+            const waypointDivs = document.querySelectorAll(".waypoint");
+            waypointDivs.forEach((div, index) => {
+                div.id = "waypoint-" + index;
+            });
+        }
+
+        function calculateRoute() {
+            assignWaypointIds();  // 更新 ID 以防拖曳後
+            document.getElementById("error").innerHTML = "";
+            document.getElementById("itinerary").innerHTML = "";
+
+            const origin = document.getElementById("origin").value;
+            const destination = document.getElementById("destination").value;
+            if (!origin || !destination) {
+                document.getElementById("error").innerHTML = "請填寫起點和終點！";
+                return;
+            }
+
+            // 從 DOM 順序取得 waypoints（支援拖曳後的順序）
+            const waypointInputs = document.querySelectorAll("#waypoints input");
+            waypoints = Array.from(waypointInputs).filter(input => input.value.trim() !== "").map(input => ({
+                location: input.value,
+                stopover: true
+            }));
+
+            directionsService.route({
+                origin: origin,
+                destination: destination,
+                waypoints: waypoints,
+                optimizeWaypoints: true,  // 自動優化最短路徑
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                    const route = response.routes[0];
+                    let itinerary = "<h2>行程細節（已自動優化）</h2><ol>";
+                    route.legs.forEach(leg => {
+                        itinerary += `<li>${leg.start_address} → ${leg.end_address} (約 ${leg.duration.text}, ${leg.distance.text})</li>`;
+                    });
+                    itinerary += "</ol>";
+                    document.getElementById("itinerary").innerHTML = itinerary;
+                } else {
+                    let msg = "規劃失敗: " + status;
+                    if (status === "ZERO_RESULTS") {
+                        msg += "<br><br>可能原因：<br>1. 地點拼寫錯誤或太偏遠<br>2. 兩點之間無道路可達<br>3. 試試用自動完成功能輸入精確地址<br>4. 先測試只有起點和終點（不加中間點）";
+                    }
+                    document.getElementById("error").innerHTML = msg;
+                }
+            });
+        }
+
+        // 初始化
+        window.onload = initMap;
+    </script>
+</body>
+</html>

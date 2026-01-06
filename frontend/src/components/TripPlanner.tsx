@@ -1,0 +1,348 @@
+import { useState, useCallback, useMemo } from 'react';
+import { format, parseISO } from 'date-fns';
+import { zhTW } from 'date-fns/locale';
+import { 
+  Plus, 
+  Route, 
+  ChevronLeft, 
+  ChevronRight, 
+  Calendar,
+  Loader2,
+  Upload,
+  ArrowDownUp,
+  Clock,
+  PlusCircle
+} from 'lucide-react';
+import { useTripStore } from '../store/tripStore';
+import { BacklogPlaceCard } from './PlaceCards';
+import AddPlaceModal from './AddPlaceModal';
+import ImportGoogleMapsModal from './ImportGoogleMapsModal';
+import AddCustomActivityModal from './AddCustomActivityModal';
+import TimelineSchedule from './TimelineSchedule';
+import type { BacklogPlace } from '../types';
+
+export default function TripPlanner() {
+  const {
+    currentTrip,
+    selectedDate,
+    setSelectedDate,
+    addBacklogPlace,
+    addBacklogPlaces,
+    removeBacklogPlace,
+    moveToItinerary,
+    removeItineraryItem,
+    updateItineraryItem,
+    optimizeRoute,
+    addCustomActivity,
+  } = useTripStore();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isCustomActivityModalOpen, setIsCustomActivityModalOpen] = useState(false);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'category'>('name');
+  const [scheduleStartHour, setScheduleStartHour] = useState(6);
+
+  // Get current day's itinerary
+  const currentDayItinerary = useMemo(() => {
+    if (!currentTrip || !selectedDate) return null;
+    return currentTrip.itinerary.find((day) => day.date === selectedDate);
+  }, [currentTrip, selectedDate]);
+
+  // Get sorted backlog places
+  const sortedBacklogPlaces = useMemo(() => {
+    if (!currentTrip) return [];
+    const places = [...currentTrip.backlog_places];
+    return places.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name, 'zh-TW');
+      } else {
+        return a.category.localeCompare(b.category);
+      }
+    });
+  }, [currentTrip, sortBy]);
+
+  const handleAddToItinerary = useCallback((place: BacklogPlace) => {
+    if (!selectedDate) return;
+    
+    // Calculate time based on last item or default to 09:00
+    let time = '09:00';
+    if (currentDayItinerary && currentDayItinerary.items.length > 0) {
+      const lastItem = currentDayItinerary.items[currentDayItinerary.items.length - 1];
+      if (lastItem.end_time) {
+        time = lastItem.end_time;
+      }
+    }
+    moveToItinerary(place, selectedDate, time);
+  }, [selectedDate, currentDayItinerary, moveToItinerary]);
+
+  const handleOptimizeRoute = async () => {
+    if (!selectedDate) return;
+    setIsOptimizing(true);
+    await optimizeRoute(selectedDate);
+    setIsOptimizing(false);
+  };
+
+  const handleAddCustomActivity = useCallback(async (activity: {
+    place_name: string;
+    time: string;
+    end_time: string;
+    category: any;
+    notes?: string;
+  }) => {
+    if (!selectedDate || !currentTrip) return;
+
+    await addCustomActivity(selectedDate, {
+      place_name: activity.place_name,
+      time: activity.time,
+      end_time: activity.end_time,
+      category: activity.category,
+      notes: activity.notes,
+      is_custom: true,
+    });
+    
+    setIsCustomActivityModalOpen(false);
+  }, [selectedDate, currentTrip, addCustomActivity]);
+
+  const handleDateChange = (direction: 'prev' | 'next') => {
+    if (!currentTrip || !selectedDate) return;
+    
+    const currentIndex = currentTrip.itinerary.findIndex((d) => d.date === selectedDate);
+    const newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+    
+    if (newIndex >= 0 && newIndex < currentTrip.itinerary.length) {
+      setSelectedDate(currentTrip.itinerary[newIndex].date);
+    }
+  };
+
+  if (!currentTrip) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-maple-500" size={32} />
+      </div>
+    );
+  }
+
+  const currentDateIndex = currentTrip.itinerary.findIndex((d) => d.date === selectedDate);
+
+  return (
+    <>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Backlog Panel */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+                  候選景點
+                  <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
+                    ({currentTrip.backlog_places.length})
+                  </span>
+                </h2>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    title="匯入 Google Maps 清單"
+                  >
+                    <Upload size={18} />
+                  </button>
+                  <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="p-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg hover:shadow-md transition-all"
+                    title="新增景點"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Sort Controls */}
+              <div className="flex items-center space-x-2">
+                <ArrowDownUp size={14} className="text-gray-400 dark:text-gray-500" />
+                <span className="text-xs text-gray-500 dark:text-gray-400">排序：</span>
+                <button
+                  onClick={() => setSortBy('name')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    sortBy === 'name'
+                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  名稱
+                </button>
+                <button
+                  onClick={() => setSortBy('category')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    sortBy === 'category'
+                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  類別
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-4 space-y-3 min-h-[300px] max-h-[600px] overflow-y-auto bg-gray-50 dark:bg-gray-900">
+              {sortedBacklogPlaces.length === 0 ? (
+                <div className="text-center py-8 text-gray-400 dark:text-gray-500">
+                  <Calendar size={32} className="mx-auto mb-2" />
+                  <p className="text-sm">尚無候選景點</p>
+                  <p className="text-xs mt-1">點擊上方 + 新增景點</p>
+                </div>
+              ) : (
+                sortedBacklogPlaces.map((place) => (
+                  <BacklogPlaceCard
+                    key={place.id}
+                    place={place}
+                    onRemove={() => removeBacklogPlace(place.id)}
+                    onAddToItinerary={selectedDate ? () => handleAddToItinerary(place) : undefined}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Itinerary Panel */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
+            {/* Date Navigation */}
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+              <button
+                onClick={() => handleDateChange('prev')}
+                disabled={currentDateIndex <= 0}
+                className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              
+              <div className="text-center">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+                  {selectedDate && format(parseISO(selectedDate), 'yyyy年 M月 d日 (EEE)', { locale: zhTW })}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  第 {currentDateIndex + 1} 天 / 共 {currentTrip.itinerary.length} 天
+                </p>
+              </div>
+              
+              <button
+                onClick={() => handleDateChange('next')}
+                disabled={currentDateIndex >= currentTrip.itinerary.length - 1}
+                className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+
+            {/* Start Time Control */}
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+              <div className="flex items-center space-x-2">
+                <Clock size={16} className="text-gray-500 dark:text-gray-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300">開始時間：</span>
+                <select
+                  value={scheduleStartHour}
+                  onChange={(e) => setScheduleStartHour(Number(e.target.value))}
+                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600"
+                >
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour.toString().padStart(2, '0')}:00
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setIsCustomActivityModalOpen(true)}
+                  disabled={!selectedDate}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  title="新增自訂活動"
+                >
+                  <PlusCircle size={16} />
+                  <span>自訂活動</span>
+                </button>
+                <button
+                  onClick={handleOptimizeRoute}
+                  disabled={isOptimizing || !currentDayItinerary || currentDayItinerary.items.length < 2}
+                  className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-forest-500 to-forest-600 dark:from-forest-600 dark:to-forest-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  {isOptimizing ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Route size={16} />
+                  )}
+                  <span>優化路徑</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Timeline Schedule */}
+            <div className="overflow-auto bg-gray-50 dark:bg-gray-900" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+              {currentDayItinerary && currentDayItinerary.items.length > 0 ? (
+                <TimelineSchedule
+                  items={currentDayItinerary.items}
+                  onUpdateItem={(itemId, updates) => 
+                    selectedDate && updateItineraryItem(selectedDate, itemId, updates)
+                  }
+                  onRemoveItem={(itemId, isCustom) => {
+                    if (selectedDate) {
+                      if (isCustom) {
+                        // 自訂活動直接刪除
+                        const dayItinerary = currentDayItinerary;
+                        if (dayItinerary) {
+                          const updatedItems = dayItinerary.items.filter(i => i.id !== itemId);
+                          // 需要實現一個直接刪除的 API
+                          removeItineraryItem(selectedDate, itemId);
+                        }
+                      } else {
+                        // 一般景點移回候選清單
+                        removeItineraryItem(selectedDate, itemId);
+                      }
+                    }
+                  }}
+                  onToggleComplete={(itemId) => {
+                    const item = currentDayItinerary.items.find(i => i.id === itemId);
+                    if (item && selectedDate) {
+                      updateItineraryItem(selectedDate, itemId, { completed: !item.completed });
+                    }
+                  }}
+                  startHour={scheduleStartHour}
+                  endHour={24}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800">
+                  <Calendar size={48} className="mb-3" />
+                  <p className="text-lg">尚無行程</p>
+                  <p className="text-sm mt-1">點擊候選景點的 + 按鈕加入行程</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Place Modal */}
+      <AddPlaceModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAdd={(place: BacklogPlace) => addBacklogPlace(place)}
+      />
+
+      {/* Import Google Maps Modal */}
+      <ImportGoogleMapsModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={(places: Omit<BacklogPlace, 'id'>[]) => addBacklogPlaces(places)}
+      />
+
+      {/* Add Custom Activity Modal */}
+      <AddCustomActivityModal
+        isOpen={isCustomActivityModalOpen}
+        onClose={() => setIsCustomActivityModalOpen(false)}
+        onAdd={handleAddCustomActivity}
+      />
+    </>
+  );
+}

@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Backend API (使用 MongoDB Atlas 雲端資料庫)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maple-planner-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB Atlas 連線字串 - 請替換為你的 Atlas 連線資訊
+      - MONGODB_URL=${MONGODB_URL:-mongodb+srv://koying:chen0523@cluster0.vfjprkf.mongodb.net/?appName=Cluster0}
+      - DATABASE_NAME=${DATABASE_NAME:-maple_planner}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY}
+      - DEBUG=${DEBUG:-false}
+    networks:
+      - maple-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: maple-planner-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - maple-network
+
+networks:
+  maple-network:
+    driver: bridge
