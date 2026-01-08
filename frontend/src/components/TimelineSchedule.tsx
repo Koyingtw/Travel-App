@@ -212,27 +212,29 @@ export default function TimelineSchedule({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="flex">
-        {/* 時間標籤列 */}
-        <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
-          <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
-            <Clock size={16} className="text-gray-400 dark:text-gray-500 mx-auto" />
-          </div>
-          {timeSlots.map((hour) => (
-            <div
-              key={hour}
-              className="relative border-b border-gray-100 dark:border-gray-800"
-              style={{ height: `${HOUR_HEIGHT}px` }}
-            >
-              <span className="absolute -top-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1">
-                {hour.toString().padStart(2, '0')}:00
-              </span>
+      <div className="flex flex-col lg:flex-row">
+        {/* 時間軸主要區域（時間標籤 + 行程） */}
+        <div className="flex flex-1 min-w-0">
+          {/* 時間標籤列 */}
+          <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+            <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
+              <Clock size={16} className="text-gray-400 dark:text-gray-500 mx-auto" />
             </div>
-          ))}
-        </div>
+            {timeSlots.map((hour) => (
+              <div
+                key={hour}
+                className="relative border-b border-gray-100 dark:border-gray-800"
+                style={{ height: `${HOUR_HEIGHT}px` }}
+              >
+                <span className="absolute -top-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1">
+                  {hour.toString().padStart(2, '0')}:00
+                </span>
+              </div>
+            ))}
+          </div>
 
-        {/* 時間軸區域 */}
-        <div className="flex-1 relative" ref={containerRef}>
+          {/* 時間軸區域 */}
+          <div className="flex-1 relative min-w-0 overflow-x-auto" ref={containerRef}>
           {/* 背景網格 */}
           <div className="absolute inset-0">
             {timeSlots.map((hour) => (
@@ -259,7 +261,7 @@ export default function TimelineSchedule({
               return (
                 <div
                   key={item.id}
-                  className={`absolute left-2 right-2 rounded-lg shadow-sm border-2 overflow-hidden transition-shadow ${
+                  className={`absolute left-1 right-1 sm:left-2 sm:right-2 rounded-lg shadow-sm border-2 overflow-hidden transition-shadow ${
                     item.is_custom
                       ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-400 dark:border-amber-600'
                       : item.completed
@@ -282,11 +284,11 @@ export default function TimelineSchedule({
 
                   {/* 內容區域 */}
                   <div
-                    className="px-3 py-2 h-full cursor-move flex flex-col"
+                    className="px-2 py-2 h-full cursor-move flex flex-col"
                     onMouseDown={(e) => handleMouseDown(e, item.id, 'move')}
                   >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
                         <GripVertical size={14} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                         <h4 className={`font-medium text-sm truncate ${
                           item.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'
@@ -294,7 +296,7 @@ export default function TimelineSchedule({
                           {item.place_name}
                         </h4>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
                         {!item.is_custom && (
                           <button
                             onClick={() => onToggleComplete(item.id)}
@@ -413,10 +415,11 @@ export default function TimelineSchedule({
               </div>
             </div>
           )}
+          </div>
         </div>
         
         {/* 右側邊欄 - 路線資訊 */}
-        <div className="w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden" style={{ maxHeight: `${totalHeight + 100}px` }}>
+        <div className="w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen">
           <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
             <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
               <MapPin size={14} />
