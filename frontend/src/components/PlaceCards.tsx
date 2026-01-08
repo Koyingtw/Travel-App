@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { 
@@ -52,7 +53,7 @@ interface BacklogPlaceCardProps {
   onAddToItinerary?: () => void;
 }
 
-export function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogPlaceCardProps) {
+export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogPlaceCardProps) {
   const CategoryIcon = categoryIcons[place.category] || categoryIcons.other;
 
   return (
@@ -117,7 +118,7 @@ export function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogP
       </div>
     </div>
   );
-}
+});
 
 // ============ Itinerary Item Card ============
 

@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, MapPin, Trash2 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -9,23 +10,30 @@ interface TripCardProps {
   onDelete?: (id: string) => void;
 }
 
-// Default cover images for Canada
+// Default cover images for Canada (optimized: smaller size + WebP)
 const defaultCovers = [
-  'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80', // Moraine Lake
-  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=800&q=80', // Toronto
-  'https://images.unsplash.com/photo-1519832979-6fa011b87667?w=800&q=80', // Vancouver
-  'https://images.unsplash.com/photo-1551009175-15bdf9dcb580?w=800&q=80', // Banff
-  'https://images.unsplash.com/photo-1508693926297-1d61ee3df82a?w=800&q=80', // Niagara Falls
+  'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=400&q=60&fm=webp', // Moraine Lake
+  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&q=60&fm=webp', // Toronto
+  'https://images.unsplash.com/photo-1519832979-6fa011b87667?w=400&q=60&fm=webp', // Vancouver
+  'https://images.unsplash.com/photo-1551009175-15bdf9dcb580?w=400&q=60&fm=webp', // Banff
+  'https://images.unsplash.com/photo-1508693926297-1d61ee3df82a?w=400&q=60&fm=webp', // Niagara Falls
 ];
 
-export default function TripCard({ trip, onDelete }: TripCardProps) {
-  const startDate = parseISO(trip.start_date);
-  const endDate = parseISO(trip.end_date);
-  const duration = differenceInDays(endDate, startDate) + 1;
-  
-  // Use trip cover or random default
-  const coverImage = trip.cover_image || 
-    defaultCovers[Math.floor(Math.random() * defaultCovers.length)];
+// Use memo to prevent unnecessary re-renders
+const TripCard = memo(function TripCard({ trip, onDelete }: TripCardProps) {
+  // Memoize computed values
+  const { startDate, endDate, duration, coverImage } = useMemo(() => {
+    const start = parseISO(trip.start_date);
+    const end = parseISO(trip.end_date);
+    // Use consistent cover based on trip id to avoid random re-renders
+    const coverIndex = trip._id.charCodeAt(0) % defaultCovers.length;
+    return {
+      startDate: start,
+      endDate: end,
+      duration: differenceInDays(end, start) + 1,
+      coverImage: trip.cover_image || defaultCovers[coverIndex],
+    };
+  }, [trip._id, trip.start_date, trip.end_date, trip.cover_image]);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -41,10 +49,12 @@ export default function TripCard({ trip, onDelete }: TripCardProps) {
       className="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 overflow-hidden card-hover border border-gray-100 dark:border-gray-700 transition-all"
     >
       {/* Cover Image */}
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden bg-gray-200 dark:bg-gray-700">
         <img
           src={coverImage}
           alt={trip.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -98,4 +108,6 @@ export default function TripCard({ trip, onDelete }: TripCardProps) {
       </div>
     </Link>
   );
-}
+});
+
+export default TripCard;

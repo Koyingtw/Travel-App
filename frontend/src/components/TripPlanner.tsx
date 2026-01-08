@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import { format, parseISO } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { 
@@ -16,12 +16,14 @@ import {
 } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import { BacklogPlaceCard } from './PlaceCards';
-import AddPlaceModal from './AddPlaceModal';
-import ImportGoogleMapsModal from './ImportGoogleMapsModal';
-import AddCustomActivityModal from './AddCustomActivityModal';
-import AccommodationModal from './AccommodationModal';
 import TimelineSchedule from './TimelineSchedule';
 import type { BacklogPlace } from '../types';
+
+// Lazy load modals - they're only needed when opened
+const AddPlaceModal = lazy(() => import('./AddPlaceModal'));
+const ImportGoogleMapsModal = lazy(() => import('./ImportGoogleMapsModal'));
+const AddCustomActivityModal = lazy(() => import('./AddCustomActivityModal'));
+const AccommodationModal = lazy(() => import('./AccommodationModal'));
 
 export default function TripPlanner() {
   const {
@@ -384,39 +386,55 @@ export default function TripPlanner() {
       </div>
 
       {/* Add Place Modal */}
-      <AddPlaceModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAdd={(place) => addBacklogPlace(place)}
-      />
+      {isAddModalOpen && (
+        <Suspense fallback={null}>
+          <AddPlaceModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onAdd={(place: Omit<BacklogPlace, 'id'>) => addBacklogPlace(place)}
+          />
+        </Suspense>
+      )}
 
       {/* Import Google Maps Modal */}
-      <ImportGoogleMapsModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        onImport={(places: Omit<BacklogPlace, 'id'>[]) => addBacklogPlaces(places)}
-      />
+      {isImportModalOpen && (
+        <Suspense fallback={null}>
+          <ImportGoogleMapsModal
+            isOpen={isImportModalOpen}
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={(places: Omit<BacklogPlace, 'id'>[]) => addBacklogPlaces(places)}
+          />
+        </Suspense>
+      )}
 
       {/* Add Custom Activity Modal */}
-      <AddCustomActivityModal
-        isOpen={isCustomActivityModalOpen}
-        onClose={() => setIsCustomActivityModalOpen(false)}
-        onAdd={handleAddCustomActivity}
-      />
+      {isCustomActivityModalOpen && (
+        <Suspense fallback={null}>
+          <AddCustomActivityModal
+            isOpen={isCustomActivityModalOpen}
+            onClose={() => setIsCustomActivityModalOpen(false)}
+            onAdd={handleAddCustomActivity}
+          />
+        </Suspense>
+      )}
 
       {/* Accommodation Modal */}
-      <AccommodationModal
-        isOpen={isAccommodationModalOpen}
-        onClose={() => setIsAccommodationModalOpen(false)}
-        onSave={handleSetAccommodation}
-        currentAccommodation={currentAccommodation ? {
-          place_name: currentAccommodation.place_name,
-          address: currentAccommodation.address,
-          coordinates: currentAccommodation.coordinates,
-          notes: currentAccommodation.notes,
-          time: currentAccommodation.time,
-        } : null}
-      />
+      {isAccommodationModalOpen && (
+        <Suspense fallback={null}>
+          <AccommodationModal
+            isOpen={isAccommodationModalOpen}
+            onClose={() => setIsAccommodationModalOpen(false)}
+            onSave={handleSetAccommodation}
+            currentAccommodation={currentAccommodation ? {
+              place_name: currentAccommodation.place_name,
+              address: currentAccommodation.address,
+              coordinates: currentAccommodation.coordinates,
+              notes: currentAccommodation.notes,
+              time: currentAccommodation.time,
+            } : null}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

@@ -491,7 +491,6 @@ export default function TimelineSchedule({
             <div 
               className={`bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow ${onEditAccommodation ? 'cursor-pointer' : ''}`}
               onClick={() => {
-                console.log('住宿區塊被點擊', onEditAccommodation);
                 if (onEditAccommodation) {
                   onEditAccommodation();
                 }
