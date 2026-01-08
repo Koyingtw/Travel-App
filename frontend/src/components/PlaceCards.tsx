@@ -71,18 +71,18 @@ export function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogP
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-2">
-              <span className={`p-1.5 rounded-lg ${categoryColors[place.category]}`}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center space-x-2 min-w-0 flex-1">
+              <span className={`p-1.5 rounded-lg flex-shrink-0 ${categoryColors[place.category]}`}>
                 <CategoryIcon size={14} />
               </span>
-              <h4 className="font-medium text-gray-900 dark:text-gray-100 truncate">{place.name}</h4>
+              <h4 className="font-medium text-gray-900 dark:text-gray-100 break-words">{place.name}</h4>
             </div>
             
             {onRemove && (
               <button
                 onClick={onRemove}
-                className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
               >
                 <Trash2 size={14} />
               </button>
@@ -90,9 +90,9 @@ export function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogP
           </div>
 
           {place.address && (
-            <div className="flex items-center space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
-              <MapPin size={12} />
-              <span className="truncate">{place.address}</span>
+            <div className="flex items-start space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <MapPin size={12} className="flex-shrink-0 mt-0.5" />
+              <span className="break-words">{place.address}</span>
             </div>
           )}
 
