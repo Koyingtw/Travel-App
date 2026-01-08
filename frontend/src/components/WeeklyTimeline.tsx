@@ -175,10 +175,16 @@ export default function WeeklyTimeline({ trip, onNavigate }: WeeklyTimelineProps
                             {item.place_name}
                           </div>
                           {item.address && height > 50 && (
-                            <div className="flex items-start gap-0.5 text-xs opacity-75 mt-0.5">
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-start gap-0.5 text-xs opacity-75 hover:opacity-100 hover:text-blue-600 dark:hover:text-blue-400 mt-0.5 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <MapPin size={10} className="flex-shrink-0 mt-0.5" />
                               <span className="truncate leading-tight">{item.address}</span>
-                            </div>
+                            </a>
                           )}
                           <div className="text-xs opacity-75 mt-0.5">
                             {item.time}

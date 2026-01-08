@@ -90,10 +90,15 @@ export function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogP
           </div>
 
           {place.address && (
-            <div className="flex items-start space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
               <MapPin size={12} className="flex-shrink-0 mt-0.5" />
               <span className="break-words">{place.address}</span>
-            </div>
+            </a>
           )}
 
           <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -189,10 +194,15 @@ export function ItineraryItemCard({
               </div>
 
               {item.address && (
-                <div className="flex items-center space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1 mt-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
                   <MapPin size={12} />
                   <span className="truncate">{item.address}</span>
-                </div>
+                </a>
               )}
 
               {item.notes && (

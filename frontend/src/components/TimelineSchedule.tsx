@@ -327,10 +327,16 @@ export default function TimelineSchedule({
                     </div>
 
                     {item.address && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mb-1 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MapPin size={10} />
                         <span className="truncate">{item.address}</span>
-                      </div>
+                      </a>
                     )}
 
                     <div className="text-xs text-gray-600 dark:text-gray-300 mt-auto">
@@ -391,10 +397,15 @@ export default function TimelineSchedule({
                     </div>
 
                     {accommodationItem.address && (
-                      <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mb-2">
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mb-2 transition-colors"
+                      >
                         <MapPin size={10} />
                         <span className="truncate">{accommodationItem.address}</span>
-                      </div>
+                      </a>
                     )}
 
                     {accommodationItem.notes && (
@@ -500,10 +511,15 @@ export default function TimelineSchedule({
                     </div>
                   </div>
                   {accommodationItem.address && (
-                    <div className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 mt-1 ml-5">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mt-1 ml-5 transition-colors"
+                    >
                       <MapPin size={8} />
                       <span className="truncate text-[10px]">{accommodationItem.address}</span>
-                    </div>
+                    </a>
                   )}
                 </div>
               </div>
