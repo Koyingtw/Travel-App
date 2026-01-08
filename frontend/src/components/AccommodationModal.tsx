@@ -45,26 +45,31 @@ export default function AccommodationModal({
   const [placeSelected, setPlaceSelected] = useState(false);
 
   useEffect(() => {
-    if (currentAccommodation) {
-      setFormData({
-        place_name: currentAccommodation.place_name,
-        address: currentAccommodation.address || '',
-        coordinates: currentAccommodation.coordinates || null,
-        notes: currentAccommodation.notes || '',
-        time: currentAccommodation.time,
-      });
-      setPlaceSelected(!!currentAccommodation.coordinates);
-    } else {
-      setFormData({
-        place_name: '',
-        address: '',
-        coordinates: null,
-        notes: '',
-        time: '22:00',
-      });
-      setPlaceSelected(false);
+    console.log('AccommodationModal useEffect triggered', { isOpen, currentAccommodation });
+    if (isOpen) {
+      if (currentAccommodation) {
+        console.log('設定現有住宿資料:', currentAccommodation);
+        setFormData({
+          place_name: currentAccommodation.place_name,
+          address: currentAccommodation.address || '',
+          coordinates: currentAccommodation.coordinates || null,
+          notes: currentAccommodation.notes || '',
+          time: currentAccommodation.time,
+        });
+        setPlaceSelected(!!currentAccommodation.coordinates);
+      } else {
+        console.log('清空表單');
+        setFormData({
+          place_name: '',
+          address: '',
+          coordinates: null,
+          notes: '',
+          time: '22:00',
+        });
+        setPlaceSelected(false);
+      }
     }
-  }, [currentAccommodation, isOpen]);
+  }, [isOpen, currentAccommodation]);
 
   const handlePlaceSelect = (place: PlaceResult) => {
     if (place.coordinates) {

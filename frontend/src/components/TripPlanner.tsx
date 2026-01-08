@@ -53,6 +53,15 @@ export default function TripPlanner() {
     return currentTrip.itinerary.find((day) => day.date === selectedDate);
   }, [currentTrip, selectedDate]);
 
+  // Get current accommodation from items array
+  const currentAccommodation = useMemo(() => {
+    if (!currentDayItinerary) return null;
+    const accommodationItem = currentDayItinerary.items.find(item => 
+      item.id.startsWith('accommodation-')
+    );
+    return accommodationItem || currentDayItinerary.accommodation || null;
+  }, [currentDayItinerary]);
+
   // Get sorted backlog places
   const sortedBacklogPlaces = useMemo(() => {
     if (!currentTrip) return [];
@@ -358,6 +367,7 @@ export default function TripPlanner() {
                       updateItineraryItem(selectedDate, itemId, { completed: !item.completed });
                     }
                   }}
+                  onEditAccommodation={() => setIsAccommodationModalOpen(true)}
                   startHour={scheduleStartHour}
                   endHour={24}
                 />
@@ -399,12 +409,12 @@ export default function TripPlanner() {
         isOpen={isAccommodationModalOpen}
         onClose={() => setIsAccommodationModalOpen(false)}
         onSave={handleSetAccommodation}
-        currentAccommodation={currentDayItinerary?.accommodation ? {
-          place_name: currentDayItinerary.accommodation.place_name,
-          address: currentDayItinerary.accommodation.address,
-          coordinates: currentDayItinerary.accommodation.coordinates,
-          notes: currentDayItinerary.accommodation.notes,
-          time: currentDayItinerary.accommodation.time,
+        currentAccommodation={currentAccommodation ? {
+          place_name: currentAccommodation.place_name,
+          address: currentAccommodation.address,
+          coordinates: currentAccommodation.coordinates,
+          notes: currentAccommodation.notes,
+          time: currentAccommodation.time,
         } : null}
       />
     </>

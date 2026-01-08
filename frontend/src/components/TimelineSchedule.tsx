@@ -9,6 +9,7 @@ interface TimelineScheduleProps {
   onRemoveItem: (itemId: string, isCustom?: boolean) => void;
   onToggleComplete: (itemId: string) => void;
   accommodation?: ItineraryItem;
+  onEditAccommodation?: () => void;
   startHour?: number; // 開始時間（小時），預設 6
   endHour?: number;   // 結束時間（小時），預設 24
 }
@@ -30,6 +31,7 @@ export default function TimelineSchedule({
   onRemoveItem,
   onToggleComplete,
   accommodation,
+  onEditAccommodation,
   startHour = 6,
   endHour = 24,
 }: TimelineScheduleProps) {
@@ -212,9 +214,11 @@ export default function TimelineSchedule({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="flex flex-col lg:flex-row">
-        {/* 時間軸主要區域（時間標籤 + 行程） */}
-        <div className="flex flex-1 min-w-0">
+      <div className="flex flex-col">
+        {/* 時間軸和路線資訊區域 */}
+        <div className="flex flex-col lg:flex-row">
+          {/* 時間軸主要區域（時間標籤 + 行程） */}
+          <div className="flex flex-1 min-w-0">
           {/* 時間標籤列 */}
           <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
             <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
@@ -368,76 +372,18 @@ export default function TimelineSchedule({
               );
             })}
           </div>
-
-          {/* 住宿顯示在底部 */}
-          {accommodationItem && (
-            <div className="mt-4 mx-2 mb-2">
-              <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 pt-4">
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  <div className="px-3 py-3">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Hotel size={16} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                            {accommodationItem.place_name}
-                          </h4>
-                          <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
-                            住宿
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => onRemoveItem(accommodationItem.id, true)}
-                        className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
-                        title="移除住宿"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-
-                    {accommodationItem.address && (
-                      <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mb-2 transition-colors"
-                      >
-                        <MapPin size={10} />
-                        <span className="truncate">{accommodationItem.address}</span>
-                      </a>
-                    )}
-
-                    {accommodationItem.notes && (
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
-                        {accommodationItem.notes}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2 text-xs">
-                      <Clock size={12} className="text-gray-500 dark:text-gray-400" />
-                      <span className="font-medium text-gray-700 dark:text-gray-300">
-                        {accommodationItem.time}
-                      </span>
-                      <span className="text-gray-400 dark:text-gray-500">入住</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          </div>
+          </div>
+          
+          {/* 右側邊欄 - 路線資訊 */}
+          <div className="w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen">
+            <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <MapPin size={14} />
+                路線資訊
+              </h4>
             </div>
-          )}
-          </div>
-        </div>
-        
-        {/* 右側邊欄 - 路線資訊 */}
-        <div className="w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen">
-          <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <MapPin size={14} />
-              路線資訊
-            </h4>
-          </div>
-          <div className="p-2 space-y-3">
+            <div className="p-2 space-y-3">
             {sortedItems.map((item, index) => {
               const nextItem = index < sortedItems.length - 1 ? sortedItems[index + 1] : null;
               const showRouteInfo = nextItem && item.coordinates && nextItem.coordinates;
@@ -537,6 +483,82 @@ export default function TimelineSchedule({
             )}
           </div>
         </div>
+        </div>
+        
+        {/* 住宿顯示在底部 - 在整個時間軸和路線資訊下方 */}
+        {accommodationItem && (
+          <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 p-4">
+            <div 
+              className={`bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow ${onEditAccommodation ? 'cursor-pointer' : ''}`}
+              onClick={() => {
+                console.log('住宿區塊被點擊', onEditAccommodation);
+                if (onEditAccommodation) {
+                  onEditAccommodation();
+                }
+              }}
+            >
+              <div className="px-3 py-3">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <Hotel size={16} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                        {accommodationItem.place_name}
+                      </h4>
+                      {onEditAccommodation && (
+                        <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+                          住宿 • 點擊編輯
+                        </div>
+                      )}
+                      {!onEditAccommodation && (
+                        <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
+                          住宿
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveItem(accommodationItem.id, true);
+                    }}
+                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
+                    title="移除住宿"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                {accommodationItem.address && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mb-2 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MapPin size={10} />
+                    <span className="truncate">{accommodationItem.address}</span>
+                  </a>
+                )}
+
+                {accommodationItem.notes && (
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
+                    {accommodationItem.notes}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-xs">
+                  <Clock size={12} className="text-gray-500 dark:text-gray-400" />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                    {accommodationItem.time}
+                  </span>
+                  <span className="text-gray-400 dark:text-gray-500">入住</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
