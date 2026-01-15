@@ -233,7 +233,7 @@ export default function TimelineSchedule({
                 className="relative border-b border-gray-100 dark:border-gray-800"
                 style={{ height: `${HOUR_HEIGHT}px` }}
               >
-                <span className="absolute -top-2 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1">
+                <span className="absolute top-1 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1">
                   {hour.toString().padStart(2, '0')}:00
                 </span>
               </div>
@@ -242,25 +242,30 @@ export default function TimelineSchedule({
 
           {/* 時間軸區域 */}
           <div className="flex-1 relative min-w-0 overflow-x-auto" ref={containerRef}>
-          {/* 背景網格 */}
-          <div className="absolute inset-0">
-            {timeSlots.map((hour) => (
-              <div
-                key={hour}
-                className="border-b border-gray-100 dark:border-gray-800"
-                style={{ height: `${HOUR_HEIGHT}px` }}
-              >
-                {/* 半小時分隔線 */}
+          {/* 頂部空白區域，對齊時間標籤列的標題 */}
+          <div className="h-10 border-b border-gray-200 dark:border-gray-700" />
+          
+          {/* 時間軸內容區域 */}
+          <div className="relative" style={{ height: `${totalHeight}px` }}>
+            {/* 背景網格 */}
+            <div className="absolute inset-0">
+              {timeSlots.map((hour) => (
                 <div
-                  className="border-b border-dashed border-gray-100 dark:border-gray-700"
-                  style={{ height: `${HOUR_HEIGHT / 2}px` }}
-                />
-              </div>
-            ))}
-          </div>
+                  key={hour}
+                  className="border-b border-gray-100 dark:border-gray-800"
+                  style={{ height: `${HOUR_HEIGHT}px` }}
+                >
+                  {/* 半小時分隔線 */}
+                  <div
+                    className="border-b border-dashed border-gray-100 dark:border-gray-700"
+                    style={{ height: `${HOUR_HEIGHT / 2}px` }}
+                  />
+                </div>
+              ))}
+            </div>
 
           {/* 行程項目 */}
-          <div className="relative" style={{ height: `${totalHeight}px` }}>
+          <div className="absolute inset-0">
             {regularItems.map((item) => {
               const { top, height, startTime, endTime } = getItemPosition(item);
               const isDragging = dragState?.itemId === item.id;
@@ -491,6 +496,7 @@ export default function TimelineSchedule({
               </div>
             )}
           </div>
+        </div>
         </div>
         </div>
         
