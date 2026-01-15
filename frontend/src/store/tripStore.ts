@@ -54,6 +54,8 @@ export const useTripStore = create<TripStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const trip = await tripApi.getById(tripId);
+      console.log('Fetched trip:', trip);
+      console.log('Trip _id:', trip._id);
       set({ currentTrip: trip, isLoading: false });
       
       // Auto-select first date
@@ -68,7 +70,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   addBacklogPlace: async (place) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    console.log('addBacklogPlace - currentTrip:', currentTrip);
+    console.log('addBacklogPlace - currentTrip._id:', currentTrip?._id);
+    
+    if (!currentTrip || !currentTrip._id) {
+      toast.error('行程尚未載入，請稍候');
+      return;
+    }
 
     try {
       const response = await tripApi.addBacklogPlace(currentTrip._id, place);
@@ -93,7 +101,10 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   addBacklogPlaces: async (places) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) {
+      toast.error('行程尚未載入，請稍候');
+      return;
+    }
 
     const newPlaces: BacklogPlace[] = [];
     let successCount = 0;
@@ -128,7 +139,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   removeBacklogPlace: async (placeId) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     try {
       await tripApi.removeBacklogPlace(currentTrip._id, placeId);
@@ -158,7 +169,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   moveToItinerary: async (place, date, time) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     // Calculate end time
     const [hours, minutes] = time.split(':').map(Number);
@@ -257,7 +268,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   addCustomActivity: async (date, activity) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
     if (!dayItinerary) return;
@@ -295,7 +306,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   setDayAccommodation: async (date, accommodation) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
     if (!dayItinerary) return;
@@ -375,7 +386,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   updateItineraryItem: async (date, itemId, updates) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const updatedItinerary = currentTrip.itinerary.map((day) => {
       if (day.date === date) {
@@ -409,7 +420,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   removeItineraryItem: async (date, itemId) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     // 找到要移除的項目
     const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
@@ -485,7 +496,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   optimizeRoute: async (date) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
     if (!dayItinerary || dayItinerary.items.length < 2) {
@@ -562,7 +573,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   updateDailyNotes: async (date, notes) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const updatedItinerary = currentTrip.itinerary.map((day) => {
       if (day.date === date) {
@@ -587,7 +598,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
   saveTrip: async () => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     try {
       await tripApi.update(currentTrip._id, {

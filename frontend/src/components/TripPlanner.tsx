@@ -198,22 +198,22 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                 </h2>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => !isReadOnly && setIsImportModalOpen(true)}
+                    onClick={() => !isReadOnly && currentTrip && setIsImportModalOpen(true)}
                     className={`p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg transition-colors ${
-                      isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                      isReadOnly || !currentTrip ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200 dark:hover:bg-gray-600'
                     }`}
-                    title={isReadOnly ? '唯讀模式' : '匯入 Google Maps 清單'}
-                    disabled={isReadOnly}
+                    title={isReadOnly ? '唯讀模式' : !currentTrip ? '載入中...' : '匯入 Google Maps 清單'}
+                    disabled={isReadOnly || !currentTrip}
                   >
                     <Upload size={18} />
                   </button>
                   <button
-                    onClick={() => !isReadOnly && setIsAddModalOpen(true)}
+                    onClick={() => !isReadOnly && currentTrip && setIsAddModalOpen(true)}
                     className={`p-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg transition-all ${
-                      isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
+                      isReadOnly || !currentTrip ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
                     }`}
-                    title={isReadOnly ? '唯讀模式' : '新增景點'}
-                    disabled={isReadOnly}
+                    title={isReadOnly ? '唯讀模式' : !currentTrip ? '載入中...' : '新增景點'}
+                    disabled={isReadOnly || !currentTrip}
                   >
                     <Plus size={18} />
                   </button>

@@ -147,7 +147,9 @@ class Trip(TripBase):
         from_attributes = True
 
     def model_dump(self, **kwargs):
-        """Override to exclude password_hash from API responses."""
+        """Override to exclude password_hash from API responses and use _id alias."""
+        # Force by_alias=True to output _id instead of id
+        kwargs.setdefault('by_alias', True)
         data = super().model_dump(**kwargs)
         data.pop('password_hash', None)  # Remove password_hash from response
         return data
