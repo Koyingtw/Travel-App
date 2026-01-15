@@ -45,6 +45,7 @@ export interface ItineraryItem {
   completed: boolean;
   order: number;
   is_custom?: boolean; // 自訂活動標記（如交通、休息等）
+  created_at?: string; // 保留原始加入候選清單的時間，用於移回時恢復
 }
 
 export interface BudgetItem {

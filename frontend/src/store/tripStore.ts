@@ -224,6 +224,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
       category: place.category,
       completed: false,
       order: 0,
+      created_at: place.created_at, // 保留原始加入時間
     };
 
     // Find the day and add the item
@@ -281,6 +282,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
       category: item.category,
       notes: item.notes,
       priority: 0,
+      created_at: item.created_at || new Date().toISOString(), // 保留原始時間
     };
 
     // Remove from itinerary
@@ -499,6 +501,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
         category: itemToRemove.category,
         notes: itemToRemove.notes,
         priority: 0,
+        created_at: itemToRemove.created_at || new Date().toISOString(), // 保留原始時間
       };
       newBacklogPlaces = [...currentTrip.backlog_places, newPlace];
     }
