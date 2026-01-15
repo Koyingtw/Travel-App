@@ -52,33 +52,13 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'time'>('time');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc'); // desc = 最新在前, asc = 最舊在前
+  const scheduleStartHour = 6; // 固定時間軸起始時間
 
   // Get current day's itinerary
   const currentDayItinerary = useMemo(() => {
     if (!currentTrip || !selectedDate) return null;
     return currentTrip.itinerary.find((day) => day.date === selectedDate);
   }, [currentTrip, selectedDate]);
-
-  // 動態計算時間軸開始時間：基於當天第一個行程
-  const scheduleStartHour = useMemo(() => {
-    if (!currentDayItinerary || currentDayItinerary.items.length === 0) return 6;
-    
-    // 找出所有非住宿項目
-    const regularItems = currentDayItinerary.items.filter(
-      item => !item.id.startsWith('accommodation-')
-    );
-    
-    if (regularItems.length === 0) return 6;
-    
-    // 找出最早的開始時間
-    const earliestTime = regularItems.reduce((earliest, item) => {
-      const [hours] = item.time.split(':').map(Number);
-      return Math.min(earliest, hours);
-    }, 24);
-    
-    // 往前推 1 小時作為緩衝，但最早不早於 6 點
-    return Math.max(6, earliestTime - 1);
-  }, [currentDayItinerary]);
 
   // Get current accommodation from items array
   const currentAccommodation = useMemo(() => {

@@ -195,14 +195,15 @@ export const useTripStore = create<TripStore>((set, get) => ({
     const accommodationItems = dayItinerary.items.filter((item) => item.id.startsWith('accommodation-'));
     const regularItems = dayItinerary.items.filter((item) => !item.id.startsWith('accommodation-'));
 
-    // 計算新項目的開始時間：接在最後一個一般行程後面
-    let actualStartTime = time;
+    // 計算新項目的開始時間
+    let actualStartTime: string;
     if (regularItems.length > 0) {
-      // 找出最後一個行程的結束時間
+      // 如果已有行程，接在最後一個行程後面
       const lastItem = regularItems[regularItems.length - 1];
-      if (lastItem.end_time) {
-        actualStartTime = lastItem.end_time;
-      }
+      actualStartTime = lastItem.end_time || time;
+    } else {
+      // 如果是第一個行程，使用固定的開始時間 09:00
+      actualStartTime = '09:00';
     }
 
     // Calculate end time based on actual start time
