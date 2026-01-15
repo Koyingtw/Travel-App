@@ -51,6 +51,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const [isAccommodationModalOpen, setIsAccommodationModalOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'time'>('time');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc'); // desc = 最新在前, asc = 最舊在前
   const [scheduleStartHour, setScheduleStartHour] = useState(6);
 
   // Get current day's itinerary
@@ -73,18 +74,23 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
     if (!currentTrip) return [];
     const places = [...currentTrip.backlog_places];
     return places.sort((a, b) => {
+      let comparison = 0;
+      
       if (sortBy === 'name') {
-        return a.name.localeCompare(b.name, 'zh-TW');
+        comparison = a.name.localeCompare(b.name, 'zh-TW');
       } else if (sortBy === 'category') {
-        return a.category.localeCompare(b.category);
+        comparison = a.category.localeCompare(b.category);
       } else { // sortBy === 'time'
-        // Treat null/undefined created_at as very old (sort to end)
+        // Treat null/undefined created_at as very old (sort to end when desc, start when asc)
         const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
         const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return timeB - timeA; // 最新的在最前面，null 在最後面
+        comparison = timeA - timeB; // A - B means ascending (oldest first)
       }
+      
+      // Apply sort direction (desc reverses the comparison)
+      return sortDirection === 'desc' ? -comparison : comparison;
     });
-  }, [currentTrip, sortBy]);
+  }, [currentTrip, sortBy, sortDirection]);
 
   const handleAddToItinerary = useCallback((place: BacklogPlace) => {
     if (!selectedDate) return;
@@ -229,6 +235,13 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
               <div className="flex items-center space-x-2">
                 <ArrowDownUp size={14} className="text-gray-400 dark:text-gray-500" />
                 <span className="text-xs text-gray-500 dark:text-gray-400">排序：</span>
+                <button
+                  onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                  className="p-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  title={sortDirection === 'desc' ? '點擊切換為遞增' : '點擊切換為遞減'}
+                >
+                  {sortDirection === 'desc' ? '↓' : '↑'}
+                </button>
                 <button
                   onClick={() => setSortBy('time')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
