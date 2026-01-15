@@ -27,6 +27,7 @@ export interface BacklogPlace {
   image_url?: string;
   rating?: number;
   priority: number;
+  created_at?: string; // ISO timestamp for sorting by addition time
 }
 
 // ============ Itinerary Types ============

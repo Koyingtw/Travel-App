@@ -84,12 +84,20 @@ export const useTripStore = create<TripStore>((set, get) => ({
         const newPlace: BacklogPlace = {
           ...place,
           id: response.data.place_id,
+          created_at: new Date().toISOString(),
         } as BacklogPlace;
+        
+        const updatedBacklog = [...currentTrip.backlog_places, newPlace]
+          .sort((a, b) => {
+            const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+            return timeB - timeA; // 最新的在最前面
+          });
         
         set({
           currentTrip: {
             ...currentTrip,
-            backlog_places: [...currentTrip.backlog_places, newPlace],
+            backlog_places: updatedBacklog,
           },
         });
         toast.success('已新增景點');
@@ -116,6 +124,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
           newPlaces.push({
             ...place,
             id: response.data.place_id,
+            created_at: new Date().toISOString(),
           } as BacklogPlace);
           successCount++;
         }
@@ -125,10 +134,17 @@ export const useTripStore = create<TripStore>((set, get) => ({
     }
 
     if (newPlaces.length > 0) {
+      const updatedBacklog = [...currentTrip.backlog_places, ...newPlaces]
+        .sort((a, b) => {
+          const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return timeB - timeA; // 最新的在最前面
+        });
+      
       set({
         currentTrip: {
           ...currentTrip,
-          backlog_places: [...currentTrip.backlog_places, ...newPlaces],
+          backlog_places: updatedBacklog,
         },
       });
       toast.success(`已匯入 ${successCount} 個景點`);

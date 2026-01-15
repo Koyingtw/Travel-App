@@ -50,7 +50,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const [isCustomActivityModalOpen, setIsCustomActivityModalOpen] = useState(false);
   const [isAccommodationModalOpen, setIsAccommodationModalOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [sortBy, setSortBy] = useState<'name' | 'category'>('name');
+  const [sortBy, setSortBy] = useState<'name' | 'category' | 'time'>('time');
   const [scheduleStartHour, setScheduleStartHour] = useState(6);
 
   // Get current day's itinerary
@@ -75,8 +75,13 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
     return places.sort((a, b) => {
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name, 'zh-TW');
-      } else {
+      } else if (sortBy === 'category') {
         return a.category.localeCompare(b.category);
+      } else { // sortBy === 'time'
+        // Treat null/undefined created_at as very old (sort to end)
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeB - timeA; // 最新的在最前面，null 在最後面
       }
     });
   }, [currentTrip, sortBy]);
@@ -224,6 +229,16 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
               <div className="flex items-center space-x-2">
                 <ArrowDownUp size={14} className="text-gray-400 dark:text-gray-500" />
                 <span className="text-xs text-gray-500 dark:text-gray-400">排序：</span>
+                <button
+                  onClick={() => setSortBy('time')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    sortBy === 'time'
+                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  時間
+                </button>
                 <button
                   onClick={() => setSortBy('name')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${

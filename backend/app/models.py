@@ -40,6 +40,7 @@ class BacklogPlace(BaseModel):
     image_url: Optional[str] = Field(default=None, description="Image URL")
     rating: Optional[float] = Field(default=None, ge=0, le=5, description="Rating (0-5)")
     priority: int = Field(default=0, ge=0, le=5, description="Priority level (0-5)")
+    created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
 
 
 class BacklogPlaceCreate(BaseModel):
