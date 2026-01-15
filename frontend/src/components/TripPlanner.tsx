@@ -25,7 +25,11 @@ const ImportGoogleMapsModal = lazy(() => import('./ImportGoogleMapsModal'));
 const AddCustomActivityModal = lazy(() => import('./AddCustomActivityModal'));
 const AccommodationModal = lazy(() => import('./AccommodationModal'));
 
-export default function TripPlanner() {
+interface TripPlannerProps {
+  isReadOnly?: boolean;
+}
+
+export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const {
     currentTrip,
     selectedDate,
@@ -194,16 +198,22 @@ export default function TripPlanner() {
                 </h2>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setIsImportModalOpen(true)}
-                    className="p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                    title="匯入 Google Maps 清單"
+                    onClick={() => !isReadOnly && setIsImportModalOpen(true)}
+                    className={`p-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg transition-colors ${
+                      isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                    title={isReadOnly ? '唯讀模式' : '匯入 Google Maps 清單'}
+                    disabled={isReadOnly}
                   >
                     <Upload size={18} />
                   </button>
                   <button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="p-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg hover:shadow-md transition-all"
-                    title="新增景點"
+                    onClick={() => !isReadOnly && setIsAddModalOpen(true)}
+                    className={`p-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg transition-all ${
+                      isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
+                    }`}
+                    title={isReadOnly ? '唯讀模式' : '新增景點'}
+                    disabled={isReadOnly}
                   >
                     <Plus size={18} />
                   </button>
@@ -249,8 +259,9 @@ export default function TripPlanner() {
                   <BacklogPlaceCard
                     key={place.id}
                     place={place}
-                    onRemove={() => removeBacklogPlace(place.id)}
-                    onAddToItinerary={selectedDate ? () => handleAddToItinerary(place) : undefined}
+                    onRemove={() => !isReadOnly && removeBacklogPlace(place.id)}
+                    onAddToItinerary={selectedDate && !isReadOnly ? () => handleAddToItinerary(place) : undefined}
+                    isReadOnly={isReadOnly}
                   />
                 ))
               )}
@@ -308,27 +319,34 @@ export default function TripPlanner() {
               </div>
               <div className="flex items-center space-x-2">
                 <button
-                  onClick={() => setIsAccommodationModalOpen(true)}
-                  disabled={!selectedDate}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                  title="設定住宿"
+                  onClick={() => !isReadOnly && setIsAccommodationModalOpen(true)}
+                  disabled={!selectedDate || isReadOnly}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                    !isReadOnly && selectedDate ? 'hover:shadow-md' : ''
+                  }`}
+                  title={isReadOnly ? '唯讀模式' : '設定住宿'}
                 >
                   <Hotel size={16} />
                   <span>住宿</span>
                 </button>
                 <button
-                  onClick={() => setIsCustomActivityModalOpen(true)}
-                  disabled={!selectedDate}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                  title="新增自訂活動"
+                  onClick={() => !isReadOnly && setIsCustomActivityModalOpen(true)}
+                  disabled={!selectedDate || isReadOnly}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                    !isReadOnly && selectedDate ? 'hover:shadow-md' : ''
+                  }`}
+                  title={isReadOnly ? '唯讀模式' : '新增自訂活動'}
                 >
                   <PlusCircle size={16} />
                   <span>自訂活動</span>
                 </button>
                 <button
                   onClick={handleOptimizeRoute}
-                  disabled={isOptimizing || !currentDayItinerary || currentDayItinerary.items.length < 2}
-                  className="flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-forest-500 to-forest-600 dark:from-forest-600 dark:to-forest-700 text-white rounded-lg hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  disabled={isOptimizing || !currentDayItinerary || currentDayItinerary.items.length < 2 || isReadOnly}
+                  className={`flex items-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-forest-500 to-forest-600 dark:from-forest-600 dark:to-forest-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm ${
+                    !isReadOnly && currentDayItinerary && currentDayItinerary.items.length >= 2 && !isOptimizing ? 'hover:shadow-md' : ''
+                  }`}
+                  title={isReadOnly ? '唯讀模式' : '智慧路線規劃'}
                 >
                   {isOptimizing ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -347,10 +365,10 @@ export default function TripPlanner() {
                   items={currentDayItinerary.items}
                   accommodation={currentDayItinerary.accommodation}
                   onUpdateItem={(itemId, updates) => 
-                    selectedDate && updateItineraryItem(selectedDate, itemId, updates)
+                    selectedDate && !isReadOnly && updateItineraryItem(selectedDate, itemId, updates)
                   }
                   onRemoveItem={(itemId, isCustom) => {
-                    if (selectedDate) {
+                    if (selectedDate && !isReadOnly) {
                       if (isCustom) {
                         // 自訂活動直接刪除
                         const dayItinerary = currentDayItinerary;
@@ -364,14 +382,16 @@ export default function TripPlanner() {
                     }
                   }}
                   onToggleComplete={(itemId) => {
+                    if (isReadOnly) return;
                     const item = currentDayItinerary.items.find(i => i.id === itemId);
                     if (item && selectedDate) {
                       updateItineraryItem(selectedDate, itemId, { completed: !item.completed });
                     }
                   }}
-                  onEditAccommodation={() => setIsAccommodationModalOpen(true)}
+                  onEditAccommodation={() => !isReadOnly && setIsAccommodationModalOpen(true)}
                   startHour={scheduleStartHour}
                   endHour={24}
+                  isReadOnly={isReadOnly}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-gray-400 dark:text-gray-500 bg-white dark:bg-gray-800">

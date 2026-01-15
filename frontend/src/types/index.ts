@@ -87,6 +87,7 @@ export interface Trip {
   user_id?: string;
   created_at: string;
   updated_at: string;
+  is_protected?: boolean; // 是否受密碼保護
 }
 
 export interface TripSummary {

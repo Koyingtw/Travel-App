@@ -1,7 +1,7 @@
 """
 Pydantic Models for Maple Planner API
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from typing import List, Optional
 from datetime import date, datetime
 from enum import Enum
@@ -104,6 +104,7 @@ class TripBase(BaseModel):
     end_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="End date")
     cover_image: Optional[str] = Field(default=None, description="Cover image URL")
     tags: List[str] = Field(default_factory=list, description="Trip tags")
+    password_hash: Optional[str] = Field(default=None, description="Hashed password for edit protection")
 
 
 class TripCreate(TripBase):
@@ -125,7 +126,7 @@ class TripUpdate(BaseModel):
 
 
 class Trip(TripBase):
-    """Complete trip model."""
+    """Full trip model with ID and metadata."""
     id: str = Field(..., alias="_id", description="Trip ID")
     user_id: Optional[str] = Field(default=None, description="User ID (for future auth)")
     backlog_places: List[BacklogPlace] = Field(default_factory=list)
@@ -134,8 +135,29 @@ class Trip(TripBase):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
+    @computed_field
+    @property
+    def is_protected(self) -> bool:
+        """Check if trip has password protection."""
+        return bool(self.password_hash)
+    
     class Config:
         populate_by_name = True
+        # Ensure computed fields are included in serialization
+        from_attributes = True
+
+    def model_dump(self, **kwargs):
+        """Override to exclude password_hash from API responses."""
+        data = super().model_dump(**kwargs)
+        data.pop('password_hash', None)  # Remove password_hash from response
+        return data
+    
+    def model_dump_json(self, **kwargs):
+        """Override to exclude password_hash from JSON responses."""
+        # First dump to dict, remove password_hash, then convert to JSON
+        import json
+        data = self.model_dump(**kwargs)
+        return json.dumps(data, default=str)
 
 
 class TripSummary(BaseModel):
@@ -220,4 +242,22 @@ class PaginatedResponse(BaseModel):
     total: int
     page: int
     page_size: int
-    total_pages: int
+
+
+# ============ Password Protection Models ============
+
+class PasswordVerify(BaseModel):
+    """Schema for password verification."""
+    password: str = Field(..., min_length=1, max_length=100, description="Password to verify")
+
+
+class PasswordSet(BaseModel):
+    """Schema for setting/updating password."""
+    password: str = Field(..., min_length=4, max_length=100, description="New password (min 4 chars)")
+    current_password: Optional[str] = Field(default=None, description="Current password (required for update)")
+
+
+class PasswordVerifyResponse(BaseModel):
+    """Response for password verification."""
+    valid: bool = Field(..., description="Whether password is valid")
+    message: str = Field(default="", description="Response message")

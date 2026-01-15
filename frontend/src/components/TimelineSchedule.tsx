@@ -12,6 +12,7 @@ interface TimelineScheduleProps {
   onEditAccommodation?: () => void;
   startHour?: number; // 開始時間（小時），預設 6
   endHour?: number;   // 結束時間（小時），預設 24
+  isReadOnly?: boolean;
 }
 
 interface DragState {
@@ -34,6 +35,7 @@ export default function TimelineSchedule({
   onEditAccommodation,
   startHour = 6,
   endHour = 24,
+  isReadOnly = false,
 }: TimelineScheduleProps) {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [tempPosition, setTempPosition] = useState<{ itemId: string; time: string; endTime: string } | null>(null);
@@ -82,6 +84,7 @@ export default function TimelineSchedule({
     itemId: string,
     type: 'move' | 'resize-top' | 'resize-bottom'
   ) => {
+    if (isReadOnly) return;
     e.preventDefault();
     const item = items.find(i => i.id === itemId);
     if (!item) return;
@@ -279,21 +282,23 @@ export default function TimelineSchedule({
                   }}
                 >
                   {/* 上邊緣調整手柄 */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-blue-400/30 flex items-center justify-center"
-                    onMouseDown={(e) => handleMouseDown(e, item.id, 'resize-top')}
-                  >
-                    <div className="w-8 h-1 bg-blue-400 rounded-full opacity-0 hover:opacity-100" />
-                  </div>
+                  {!isReadOnly && (
+                    <div
+                      className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-blue-400/30 flex items-center justify-center"
+                      onMouseDown={(e) => handleMouseDown(e, item.id, 'resize-top')}
+                    >
+                      <div className="w-8 h-1 bg-blue-400 rounded-full opacity-0 hover:opacity-100" />
+                    </div>
+                  )}
 
                   {/* 內容區域 */}
                   <div
-                    className="px-2 py-2 h-full cursor-move flex flex-col"
-                    onMouseDown={(e) => handleMouseDown(e, item.id, 'move')}
+                    className={`px-2 py-2 h-full flex flex-col ${!isReadOnly ? 'cursor-move' : ''}`}
+                    onMouseDown={(e) => !isReadOnly && handleMouseDown(e, item.id, 'move')}
                   >
                     <div className="flex items-start justify-between gap-1 mb-1">
                       <div className="flex items-center gap-1 flex-1 min-w-0 overflow-hidden">
-                        <GripVertical size={14} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                        {!isReadOnly && <GripVertical size={14} className="text-gray-400 dark:text-gray-500 flex-shrink-0" />}
                         <h4 className={`font-medium text-sm truncate ${
                           item.completed ? 'text-gray-500 dark:text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'
                         }`}>
@@ -301,7 +306,7 @@ export default function TimelineSchedule({
                         </h4>
                       </div>
                       <div className="flex items-center gap-0.5 flex-shrink-0">
-                        {!item.is_custom && (
+                        {!item.is_custom && !isReadOnly && (
                           <button
                             onClick={() => onToggleComplete(item.id)}
                             className="p-1 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
@@ -320,13 +325,15 @@ export default function TimelineSchedule({
                             </div>
                           </button>
                         )}
-                        <button
-                          onClick={() => onRemoveItem(item.id, item.is_custom)}
-                          className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
-                          title={item.is_custom ? '刪除活動' : '移回候選景點'}
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {!isReadOnly && (
+                          <button
+                            onClick={() => onRemoveItem(item.id, item.is_custom)}
+                            className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
+                            title={item.is_custom ? '刪除活動' : '移回候選景點'}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -362,12 +369,14 @@ export default function TimelineSchedule({
                   </div>
 
                   {/* 下邊緣調整手柄 */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-blue-400/30 dark:hover:bg-blue-600/30 flex items-center justify-center"
-                    onMouseDown={(e) => handleMouseDown(e, item.id, 'resize-bottom')}
-                  >
-                    <div className="w-8 h-1 bg-blue-400 dark:bg-blue-600 rounded-full opacity-0 hover:opacity-100" />
-                  </div>
+                  {!isReadOnly && (
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-blue-400/30 dark:hover:bg-blue-600/30 flex items-center justify-center"
+                      onMouseDown={(e) => handleMouseDown(e, item.id, 'resize-bottom')}
+                    >
+                      <div className="w-8 h-1 bg-blue-400 dark:bg-blue-600 rounded-full opacity-0 hover:opacity-100" />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -489,9 +498,9 @@ export default function TimelineSchedule({
         {accommodationItem && (
           <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 p-4">
             <div 
-              className={`bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow ${onEditAccommodation ? 'cursor-pointer' : ''}`}
+              className={`bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow ${onEditAccommodation && !isReadOnly ? 'cursor-pointer' : ''}`}
               onClick={() => {
-                if (onEditAccommodation) {
+                if (onEditAccommodation && !isReadOnly) {
                   onEditAccommodation();
                 }
               }}
@@ -504,28 +513,30 @@ export default function TimelineSchedule({
                       <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
                         {accommodationItem.place_name}
                       </h4>
-                      {onEditAccommodation && (
+                      {onEditAccommodation && !isReadOnly && (
                         <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
                           住宿 • 點擊編輯
                         </div>
                       )}
-                      {!onEditAccommodation && (
+                      {(!onEditAccommodation || isReadOnly) && (
                         <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
                           住宿
                         </div>
                       )}
                     </div>
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveItem(accommodationItem.id, true);
-                    }}
-                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
-                    title="移除住宿"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {!isReadOnly && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemoveItem(accommodationItem.id, true);
+                      }}
+                      className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded transition-colors"
+                      title="移除住宿"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
 
                 {accommodationItem.address && (

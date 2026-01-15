@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { Calendar, MapPin, FileText, Tag, Image, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, FileText, Tag, Image, Loader2, Lock } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { tripApi } from '../services/api';
 import toast from 'react-hot-toast';
@@ -34,6 +34,9 @@ export default function NewTripPage() {
     tags: [] as string[],
   });
   const [tagInput, setTagInput] = useState('');
+  const [enablePassword, setEnablePassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const createMutation = useMutation({
     mutationFn: tripApi.create,
@@ -48,7 +51,7 @@ export default function NewTripPage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.title.trim()) {
@@ -65,8 +68,46 @@ export default function NewTripPage() {
       toast.error('結束日期必須在開始日期之後');
       return;
     }
+    
+    // 驗證密碼
+    if (enablePassword) {
+      if (!password || password.length < 4) {
+        toast.error('密碼長度至少需要 4 個字元');
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error('兩次輸入的密碼不一致');
+        return;
+      }
+    }
 
-    createMutation.mutate(formData);
+    createMutation.mutate(formData, {
+      onSuccess: async (data) => {
+        const tripId = data.data?.trip_id;
+        
+        // 如果啟用密碼保護，設定密碼
+        if (enablePassword && password && tripId) {
+          try {
+            const response = await fetch(`/api/trips/${tripId}/password/set`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ password })
+            });
+            
+            if (!response.ok) {
+              toast.error('密碼設定失敗，但行程已建立');
+            }
+          } catch (err) {
+            toast.error('密碼設定失敗，但行程已建立');
+          }
+        }
+        
+        toast.success('行程建立成功！');
+        if (tripId) {
+          navigate(`/trip/${tripId}`);
+        }
+      }
+    });
   };
 
   const handleAddTag = () => {
@@ -277,6 +318,128 @@ export default function NewTripPage() {
                   className="w-full h-32 object-cover rounded-lg"
                   onError={(e) => (e.currentTarget.style.display = 'none')}
                 />
+              </div>
+            )}
+          </div>
+
+          {/* Password Protection (Optional) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Lock className="text-gray-400" size={20} />
+                <label className="text-sm font-medium text-gray-700">
+                  密碼保護（選填）
+                </label>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEnablePassword(!enablePassword);
+                  if (enablePassword) {
+                    setPassword('');
+                    setConfirmPassword('');
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  enablePassword ? 'bg-maple-500' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    enablePassword ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {enablePassword && (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 mb-3">
+                  設定密碼後，需要輸入正確密碼才能編輯此行程
+                </p>
+                <div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="輸入密碼（至少 4 個字元）"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    minLength={4}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="確認密碼"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                  />
+                </div>
+                {password && confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-red-600">密碼不一致</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Password Protection (Optional) */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Lock className="text-gray-400" size={20} />
+                <label className="text-sm font-medium text-gray-700">
+                  密碼保護（選填）
+                </label>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEnablePassword(!enablePassword);
+                  if (enablePassword) {
+                    setPassword('');
+                    setConfirmPassword('');
+                  }
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  enablePassword ? 'bg-maple-500' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    enablePassword ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            
+            {enablePassword && (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-500 mb-3">
+                  設定密碼後，需要輸入正確密碼才能編輯此行程
+                </p>
+                <div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="輸入密碼（至少 4 個字元）"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    minLength={4}
+                  />
+                </div>
+                <div>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="確認密碼"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                  />
+                </div>
+                {password && confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-red-600">密碼不一致</p>
+                )}
               </div>
             )}
           </div>

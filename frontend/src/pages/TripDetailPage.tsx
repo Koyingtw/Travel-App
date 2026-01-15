@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Loader2, CalendarDays } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Loader2, CalendarDays, Lock, Unlock, Settings } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
 import { useTripStore } from '../store/tripStore';
@@ -8,10 +8,15 @@ import { useGoogleMaps } from '../hooks/useGoogleMaps';
 import TripPlanner from '../components/TripPlanner';
 import MapComponent from '../components/MapComponent';
 import NoteEditor from '../components/NoteEditor';
+import { PasswordDialog } from '../components/PasswordDialog';
+import { PasswordManagementModal } from '../components/PasswordManagementModal';
 
 export default function TripDetailPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { currentTrip, isLoading, error, fetchTrip, selectedDate } = useTripStore();
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showPasswordManagement, setShowPasswordManagement] = useState(false);
   
   // Pre-load Google Maps API for place autocomplete
   useGoogleMaps();
@@ -21,6 +26,52 @@ export default function TripDetailPage() {
       fetchTrip(tripId);
     }
   }, [tripId, fetchTrip]);
+
+  // Reset unlock state when trip changes or on mount
+  useEffect(() => {
+    setIsUnlocked(false);
+  }, [currentTrip?._id]);
+
+  const handleVerifyPassword = async (password: string): Promise<boolean> => {
+    if (!tripId) return false;
+    
+    try {
+      const response = await fetch(`/api/trips/${tripId}/password/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.data?.valid) {
+        setIsUnlocked(true);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Password verification failed:', err);
+      return false;
+    }
+  };
+
+  const handlePasswordChange = () => {
+    // Refresh trip data to get updated is_protected status
+    if (tripId) {
+      fetchTrip(tripId);
+      setIsUnlocked(false);
+    }
+  };
+
+  const isReadOnly = currentTrip?.is_protected && !isUnlocked;
+  
+  // Debug: Log protection status
+  console.log('Trip protection status:', {
+    is_protected: currentTrip?.is_protected,
+    isUnlocked,
+    isReadOnly,
+    tripId: currentTrip?._id
+  });
 
   if (isLoading) {
     return (
@@ -67,9 +118,32 @@ export default function TripDetailPage() {
                 <ArrowLeft size={20} />
               </Link>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-maple-600 to-maple-500 dark:from-maple-400 dark:to-maple-300 bg-clip-text text-transparent">
-                  {currentTrip.title}
-                </h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-maple-600 to-maple-500 dark:from-maple-400 dark:to-maple-300 bg-clip-text text-transparent">
+                    {currentTrip.title}
+                  </h1>
+                  
+                  {/* Lock Status Badge */}
+                  {currentTrip.is_protected && (
+                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
+                      isUnlocked
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {isUnlocked ? (
+                        <>
+                          <Unlock size={12} />
+                          <span>已解鎖</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock size={12} />
+                          <span>唯讀模式</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400 mt-1">
                   <span className="flex items-center space-x-1">
                     <MapPin size={14} />
@@ -85,37 +159,60 @@ export default function TripDetailPage() {
               </div>
             </div>
 
-            {/* Weekly Timeline Button */}
-            <Link
-              to={`/trip/${tripId}/timeline`}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
-            >
-              <CalendarDays size={18} />
-              <span className="font-medium">完整時間表</span>
-            </Link>
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              {/* Password Management Button */}
+              <button
+                onClick={() => setShowPasswordManagement(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                <Settings size={16} />
+                <span className="hidden sm:inline">密碼設定</span>
+              </button>
 
-            {/* Day Selector Pills */}
-            <div className="hidden md:flex items-center space-x-2 overflow-x-auto max-w-xl">
-              {currentTrip.itinerary.slice(0, 7).map((day, index) => {
-                const isSelected = selectedDate === day.date;
-                return (
-                  <button
-                    key={day.date}
-                    onClick={() => useTripStore.getState().setSelectedDate(day.date)}
-                    className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                      isSelected
-                        ? 'bg-maple-500 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    Day {index + 1}
-                  </button>
-                );
-              })}
-              {currentTrip.itinerary.length > 7 && (
-                <span className="text-gray-400 text-sm">+{currentTrip.itinerary.length - 7}</span>
+              {/* Unlock Button (only show if protected and locked) */}
+              {isReadOnly && (
+                <button
+                  onClick={() => setShowPasswordDialog(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <Lock size={16} />
+                  <span>解鎖編輯</span>
+                </button>
               )}
+
+              {/* Weekly Timeline Button */}
+              <Link
+                to={`/trip/${tripId}/timeline`}
+                className="flex items-center space-x-2 px-5 py-2.5 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <CalendarDays size={18} />
+                <span className="font-medium hidden sm:inline">完整時間表</span>
+              </Link>
             </div>
+          </div>
+
+          {/* Day Selector Pills - moved outside flex-between container */}
+          <div className="flex items-center space-x-2 overflow-x-auto max-w-full mt-4">
+            {currentTrip.itinerary.slice(0, 7).map((day, index) => {
+              const isSelected = selectedDate === day.date;
+              return (
+                <button
+                  key={day.date}
+                  onClick={() => useTripStore.getState().setSelectedDate(day.date)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    isSelected
+                      ? 'bg-maple-500 text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Day {index + 1}
+                </button>
+              );
+            })}
+            {currentTrip.itinerary.length > 7 && (
+              <span className="text-gray-400 text-sm">+{currentTrip.itinerary.length - 7}</span>
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +222,7 @@ export default function TripDetailPage() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Left Column: Planner */}
           <div className="xl:col-span-2">
-            <TripPlanner />
+            <TripPlanner isReadOnly={isReadOnly} />
           </div>
 
           {/* Right Column: Map and Notes */}
@@ -148,6 +245,21 @@ export default function TripDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Password Dialogs */}
+      <PasswordDialog
+        isOpen={showPasswordDialog}
+        onClose={() => setShowPasswordDialog(false)}
+        onVerify={handleVerifyPassword}
+      />
+
+      <PasswordManagementModal
+        isOpen={showPasswordManagement}
+        onClose={() => setShowPasswordManagement(false)}
+        tripId={tripId || ''}
+        isProtected={currentTrip?.is_protected || false}
+        onPasswordChange={handlePasswordChange}
+      />
     </div>
   );
 }

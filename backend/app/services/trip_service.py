@@ -10,6 +10,7 @@ from app.models import (
     BacklogPlace, DayItinerary, ItineraryItem, BudgetItem
 )
 import uuid
+import bcrypt
 
 
 def generate_id() -> str:
@@ -79,16 +80,22 @@ class TripService:
         collection = get_trips_collection()
         
         try:
-            trip = await collection.find_one({"_id": ObjectId(trip_id)})
-            if trip:
-                trip["_id"] = str(trip["_id"])
+            trip_data = await collection.find_one({"_id": ObjectId(trip_id)})
+            if trip_data:
+                trip_data["_id"] = str(trip_data["_id"])
                 # Calculate total budget
                 total = 0
-                for day in trip.get("itinerary", []):
+                for day in trip_data.get("itinerary", []):
                     for budget_item in day.get("budget_items", []):
                         total += budget_item.get("cost", 0)
-                trip["total_budget"] = total
-            return trip
+                trip_data["total_budget"] = total
+                
+                # Convert to Trip model to get computed fields (like is_protected)
+                from app.models import Trip
+                trip_model = Trip(**trip_data)
+                # Use model_dump to get dict with computed fields and exclude password_hash
+                return trip_model.model_dump()
+            return None
         except Exception:
             return None
     
@@ -348,6 +355,103 @@ class TripService:
             "total_budget": total_budget,
             "activities_by_category": categories
         }
+    
+    @staticmethod
+    async def verify_password(trip_id: str, password: str) -> Optional[bool]:
+        """Verify password for a trip. Returns True if password is correct or trip has no password."""
+        collection = get_trips_collection()
+        trip = await collection.find_one({"_id": ObjectId(trip_id)})
+        
+        print(f"DEBUG verify: trip_id={trip_id}, password={password}")
+        
+        if not trip:
+            print("DEBUG verify: Trip not found")
+            return None
+        
+        # If trip has no password, allow access
+        stored_hash = trip.get("password_hash")
+        print(f"DEBUG verify: stored_hash={stored_hash}")
+        
+        if not stored_hash:
+            print("DEBUG verify: No password set, allowing access")
+            return True
+        
+        # Verify password against stored hash
+        print(f"DEBUG verify: Checking password...")
+        result = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+        print(f"DEBUG verify: Password check result={result}")
+        return result
+    
+    @staticmethod
+    async def set_password(trip_id: str, new_password: str, current_password: Optional[str] = None) -> tuple[bool, str]:
+        """Set or update password for a trip. If password exists, current_password must be provided."""
+        collection = get_trips_collection()
+        trip = await collection.find_one({"_id": ObjectId(trip_id)})
+        
+        print(f"DEBUG service: trip_id={trip_id}, new_password={new_password}, current_password={current_password}")
+        
+        if not trip:
+            print("DEBUG service: Trip not found")
+            return False, "Trip not found"
+        
+        # If trip already has a password, verify current password first
+        stored_hash = trip.get("password_hash")
+        print(f"DEBUG service: stored_hash={stored_hash}")
+        
+        if stored_hash:
+            print("DEBUG service: Trip has existing password, checking current password")
+            if not current_password:
+                print("DEBUG service: Current password required but not provided")
+                return False, "Current password required"
+            if not bcrypt.checkpw(current_password.encode('utf-8'), stored_hash.encode('utf-8')):
+                print("DEBUG service: Invalid current password")
+                return False, "Invalid current password"
+        
+        print("DEBUG service: Hashing new password")
+        # Hash the new password
+        salt = bcrypt.gensalt()
+        new_hash = bcrypt.hashpw(new_password.encode('utf-8'), salt)
+        
+        print(f"DEBUG service: Updating trip with new hash")
+        # Update the trip with new password hash
+        result = await collection.update_one(
+            {"_id": ObjectId(trip_id)},
+            {"$set": {"password_hash": new_hash.decode('utf-8')}}
+        )
+        
+        print(f"DEBUG service: modified_count={result.modified_count}, matched_count={result.matched_count}")
+        
+        if result.modified_count > 0 or result.matched_count > 0:
+            return True, "Password set successfully"
+        return False, "Failed to set password"
+    
+    @staticmethod
+    async def remove_password(trip_id: str, current_password: str) -> tuple[bool, str]:
+        """Remove password protection from a trip. Requires current password verification."""
+        collection = get_trips_collection()
+        trip = await collection.find_one({"_id": ObjectId(trip_id)})
+        
+        if not trip:
+            return False, "Trip not found"
+        
+        # Verify current password
+        stored_hash = trip.get("password_hash")
+        if not stored_hash:
+            # Already no password
+            return True, "Password protection already removed"
+        
+        if not bcrypt.checkpw(current_password.encode('utf-8'), stored_hash.encode('utf-8')):
+            return False, "Invalid password"
+        
+        # Remove password hash
+        result = await collection.update_one(
+            {"_id": ObjectId(trip_id)},
+            {"$unset": {"password_hash": ""}}
+        )
+        
+        if result.modified_count > 0:
+            return True, "Password protection removed"
+        return False, "Failed to remove password"
 
 
 trip_service = TripService()

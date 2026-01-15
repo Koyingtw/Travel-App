@@ -6,7 +6,8 @@ from typing import Optional
 from app.models import (
     Trip, TripCreate, TripUpdate, TripSummary,
     BacklogPlace, ItineraryItem, BudgetItem,
-    APIResponse, PaginatedResponse
+    APIResponse, PaginatedResponse,
+    PasswordVerify, PasswordSet, PasswordVerifyResponse
 )
 from app.services.trip_service import trip_service
 
@@ -234,4 +235,77 @@ async def add_budget_item(trip_id: str, date: str, budget_item: BudgetItem):
         success=True,
         message="Budget item added",
         data={"item_id": item_id}
+    )
+
+
+# ============ Password Protection Endpoints ============
+
+@router.post("/{trip_id}/password/verify", response_model=APIResponse)
+async def verify_trip_password(trip_id: str, password_data: PasswordVerify):
+    """
+    驗證行程密碼
+    
+    Verify password for trip edit access.
+    """
+    is_valid = await trip_service.verify_password(trip_id, password_data.password)
+    
+    if is_valid is None:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    return APIResponse(
+        success=True,
+        message="Password valid" if is_valid else "Invalid password",
+        data={"valid": is_valid}
+    )
+
+
+@router.post("/{trip_id}/password/set", response_model=APIResponse)
+async def set_trip_password(trip_id: str, password_data: PasswordSet):
+    """
+    設定或更新行程密碼
+    
+    Set or update trip password. Requires current password if already protected.
+    """
+    print(f"DEBUG: Setting password for trip {trip_id}")
+    print(f"DEBUG: password_data.password = {password_data.password}")
+    print(f"DEBUG: password_data.current_password = {password_data.current_password}")
+    
+    success, message = await trip_service.set_password(
+        trip_id,
+        password_data.password,
+        password_data.current_password
+    )
+    
+    print(f"DEBUG: success = {success}, message = {message}")
+    
+    if not success:
+        if "not found" in message.lower():
+            raise HTTPException(status_code=404, detail=message)
+        else:
+            raise HTTPException(status_code=403, detail=message)
+    
+    return APIResponse(
+        success=True,
+        message=message
+    )
+
+
+@router.post("/{trip_id}/password/remove", response_model=APIResponse)
+async def remove_trip_password(trip_id: str, password_data: PasswordVerify):
+    """
+    移除行程密碼保護
+    
+    Remove password protection from trip. Requires current password.
+    """
+    success, message = await trip_service.remove_password(trip_id, password_data.password)
+    
+    if not success:
+        if "not found" in message.lower():
+            raise HTTPException(status_code=404, detail=message)
+        else:
+            raise HTTPException(status_code=403, detail=message)
+    
+    return APIResponse(
+        success=True,
+        message=message
     )

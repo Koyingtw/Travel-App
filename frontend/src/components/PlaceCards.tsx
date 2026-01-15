@@ -51,16 +51,17 @@ interface BacklogPlaceCardProps {
   place: BacklogPlace;
   onRemove?: () => void;
   onAddToItinerary?: () => void;
+  isReadOnly?: boolean;
 }
 
-export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove, onAddToItinerary }: BacklogPlaceCardProps) {
+export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove, onAddToItinerary, isReadOnly = false }: BacklogPlaceCardProps) {
   const CategoryIcon = categoryIcons[place.category] || categoryIcons.other;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm dark:shadow-gray-900/50 card-hover transition-all">
       <div className="flex items-start space-x-3">
         {/* Add to Itinerary Button */}
-        {onAddToItinerary && (
+        {onAddToItinerary && !isReadOnly && (
           <button
             onClick={onAddToItinerary}
             className="mt-1 p-1 text-green-500 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
@@ -80,7 +81,7 @@ export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove
               <h4 className="font-medium text-gray-900 dark:text-gray-100 break-words">{place.name}</h4>
             </div>
             
-            {onRemove && (
+            {onRemove && !isReadOnly && (
               <button
                 onClick={onRemove}
                 className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
