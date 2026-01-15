@@ -187,8 +187,26 @@ export const useTripStore = create<TripStore>((set, get) => ({
     const { currentTrip } = get();
     if (!currentTrip || !currentTrip._id) return;
 
-    // Calculate end time
-    const [hours, minutes] = time.split(':').map(Number);
+    // Find the day to calculate the correct time
+    const dayItinerary = currentTrip.itinerary.find((d) => d.date === date);
+    if (!dayItinerary) return;
+
+    // 分離住宿項目
+    const accommodationItems = dayItinerary.items.filter((item) => item.id.startsWith('accommodation-'));
+    const regularItems = dayItinerary.items.filter((item) => !item.id.startsWith('accommodation-'));
+
+    // 計算新項目的開始時間：接在最後一個一般行程後面
+    let actualStartTime = time;
+    if (regularItems.length > 0) {
+      // 找出最後一個行程的結束時間
+      const lastItem = regularItems[regularItems.length - 1];
+      if (lastItem.end_time) {
+        actualStartTime = lastItem.end_time;
+      }
+    }
+
+    // Calculate end time based on actual start time
+    const [hours, minutes] = actualStartTime.split(':').map(Number);
     const endMinutes = hours * 60 + minutes + place.duration;
     const endHours = Math.floor(endMinutes / 60);
     const endMins = endMinutes % 60;
@@ -196,7 +214,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
 
     const newItem: ItineraryItem = {
       id: `temp-${Date.now()}`,
-      time,
+      time: actualStartTime,
       end_time: endTime,
       place_name: place.name,
       address: place.address,
@@ -211,7 +229,12 @@ export const useTripStore = create<TripStore>((set, get) => ({
     // Find the day and add the item
     const updatedItinerary = currentTrip.itinerary.map((day) => {
       if (day.date === date) {
-        const items = [...day.items, newItem].sort((a, b) => a.time.localeCompare(b.time));
+        // 將新項目加入一般行程（不需要排序，直接放在最後）
+        const updatedRegularItems = [...regularItems, newItem];
+        
+        // 合併：一般行程在前，住宿在後
+        const items = [...updatedRegularItems, ...accommodationItems];
+        
         // Update order
         items.forEach((item, index) => {
           item.order = index;
