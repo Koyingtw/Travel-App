@@ -52,7 +52,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'category' | 'time'>('time');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc'); // desc = 最新在前, asc = 最舊在前
-  const scheduleStartHour = 6; // 固定時間軸起始時間
+  const [scheduleStartHour, setScheduleStartHour] = useState(6);
 
   // Get current day's itinerary
   const currentDayItinerary = useMemo(() => {

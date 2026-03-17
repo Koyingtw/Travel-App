@@ -128,6 +128,9 @@ Travel-App/
 git clone https://github.com/yourusername/Travel-App.git
 cd Travel-App
 
+# 設定環境變數（必填 API 金鑰）
+cp .env.example .env
+
 # 啟動所有服務
 docker-compose up -d
 
@@ -296,6 +299,7 @@ Maple Planner is a modern travel itinerary planning application focused on Canad
 # Clone and run with Docker
 git clone https://github.com/yourusername/Travel-App.git
 cd Travel-App
+cp .env.example .env
 docker-compose up -d
 
 # Access the app
