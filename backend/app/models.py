@@ -28,6 +28,15 @@ class Coordinates(BaseModel):
     lng: float = Field(..., ge=-180, le=180, description="Longitude")
 
 
+class PlaceGroup(BaseModel):
+    """A group for organizing backlog places."""
+    id: Optional[str] = Field(default=None, description="Unique identifier")
+    name: str = Field(..., min_length=1, max_length=100, description="Group name")
+    color: Optional[str] = Field(default="#6366f1", description="Hex color code")
+    description: Optional[str] = Field(default=None, max_length=500, description="Group description")
+    created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
+
+
 class BacklogPlace(BaseModel):
     """A place in the backlog (candidate list)."""
     id: Optional[str] = Field(default=None, description="Unique identifier")
@@ -40,6 +49,7 @@ class BacklogPlace(BaseModel):
     image_url: Optional[str] = Field(default=None, description="Image URL")
     rating: Optional[float] = Field(default=None, ge=0, le=5, description="Rating (0-5)")
     priority: int = Field(default=0, ge=0, le=5, description="Priority level (0-5)")
+    group_id: Optional[str] = Field(default=None, description="Group ID for organizing places")
     created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
 
 
@@ -131,6 +141,7 @@ class Trip(TripBase):
     id: str = Field(..., alias="_id", description="Trip ID")
     user_id: Optional[str] = Field(default=None, description="User ID (for future auth)")
     backlog_places: List[BacklogPlace] = Field(default_factory=list)
+    place_groups: List[PlaceGroup] = Field(default_factory=list, description="Groups for organizing places")
     itinerary: List[DayItinerary] = Field(default_factory=list)
     total_budget: float = Field(default=0, description="Total estimated budget")
     created_at: datetime = Field(default_factory=datetime.utcnow)

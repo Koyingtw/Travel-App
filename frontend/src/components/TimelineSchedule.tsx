@@ -224,16 +224,14 @@ export default function TimelineSchedule({
           <div className="flex flex-1 min-w-0">
           {/* 時間標籤列 */}
           <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
-            <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
-              <Clock size={16} className="text-gray-400 dark:text-gray-500 mx-auto" />
-            </div>
+            <div className="h-10" /> {/* 對齊頂部空白區域 */}
             {timeSlots.map((hour) => (
               <div
                 key={hour}
                 className="relative border-b border-gray-100 dark:border-gray-800"
                 style={{ height: `${HOUR_HEIGHT}px` }}
               >
-                <span className="absolute top-1 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1">
+                <span className="absolute top-0 left-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 px-1 leading-5 h-5">
                   {hour.toString().padStart(2, '0')}:00
                 </span>
               </div>
@@ -250,15 +248,12 @@ export default function TimelineSchedule({
             {/* 背景網格 */}
             <div className="absolute inset-0">
               {timeSlots.map((hour) => (
-                <div
-                  key={hour}
-                  className="border-b border-gray-100 dark:border-gray-800"
-                  style={{ height: `${HOUR_HEIGHT}px` }}
-                >
-                  {/* 半小時分隔線 */}
-                  <div
-                    className="border-b border-dashed border-gray-100 dark:border-gray-700"
-                    style={{ height: `${HOUR_HEIGHT / 2}px` }}
+                <div key={hour} className="relative" style={{ height: `${HOUR_HEIGHT}px` }}>
+                  {/* 小時實線邊界（頂部） */}
+                  <div className="absolute inset-x-0 top-0 border-t border-gray-100 dark:border-gray-800" />
+                  {/* 半小時虛線（精確在中間） */}
+                  <div className="absolute inset-x-0 border-t border-dashed border-gray-200 dark:border-gray-700" 
+                    style={{ top: '0%' }}
                   />
                 </div>
               ))}

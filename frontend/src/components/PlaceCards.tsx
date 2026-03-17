@@ -51,11 +51,21 @@ interface BacklogPlaceCardProps {
   place: BacklogPlace;
   onRemove?: () => void;
   onAddToItinerary?: () => void;
+  onChangeGroup?: (groupId?: string) => void;
+  availableGroups?: Array<{ id: string; name: string; color?: string }>;
   isReadOnly?: boolean;
 }
 
-export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove, onAddToItinerary, isReadOnly = false }: BacklogPlaceCardProps) {
+export const BacklogPlaceCard = memo(function BacklogPlaceCard({ 
+  place, 
+  onRemove, 
+  onAddToItinerary, 
+  onChangeGroup,
+  availableGroups = [],
+  isReadOnly = false 
+}: BacklogPlaceCardProps) {
   const CategoryIcon = categoryIcons[place.category] || categoryIcons.other;
+  const placeGroup = availableGroups.find(g => g.id === place.group_id);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm dark:shadow-gray-900/50 card-hover transition-all">
@@ -115,6 +125,34 @@ export const BacklogPlaceCard = memo(function BacklogPlaceCard({ place, onRemove
               </span>
             )}
           </div>
+
+          {/* Group Badge and Selector */}
+          {(placeGroup || (onChangeGroup && availableGroups.length > 0)) && !isReadOnly && (
+            <div className="mt-2 flex items-center gap-2">
+              {placeGroup && (
+                <span
+                  className="px-2 py-0.5 rounded text-xs font-medium text-white flex items-center gap-1"
+                  style={{ backgroundColor: placeGroup.color || '#6366f1' }}
+                >
+                  🏷️ {placeGroup.name}
+                </span>
+              )}
+              {onChangeGroup && availableGroups.length > 0 && (
+                <select
+                  value={place.group_id || ''}
+                  onChange={(e) => onChangeGroup(e.target.value || undefined)}
+                  className="px-2 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-600"
+                >
+                  <option value="">移除群組</option>
+                  {availableGroups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

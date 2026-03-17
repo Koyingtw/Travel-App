@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Trip, BacklogPlace, ItineraryItem } from '../types';
+import type { Trip, BacklogPlace, ItineraryItem, PlaceGroup } from '../types';
 import { tripApi, routeApi } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -15,11 +15,17 @@ interface TripStore {
   setSelectedDate: (date: string | null) => void;
   fetchTrip: (tripId: string) => Promise<void>;
   
+  // Group operations
+  addPlaceGroup: (group: Omit<PlaceGroup, 'id'>) => Promise<void>;
+  removePlaceGroup: (groupId: string) => Promise<void>;
+  updatePlaceGroup: (groupId: string, updates: Partial<PlaceGroup>) => Promise<void>;
+  
   // Backlog operations
   addBacklogPlace: (place: Omit<BacklogPlace, 'id'>) => Promise<void>;
   addBacklogPlaces: (places: Omit<BacklogPlace, 'id'>[]) => Promise<void>;
   removeBacklogPlace: (placeId: string) => Promise<void>;
   updateBacklogPlaces: (places: BacklogPlace[]) => void;
+  updateBacklogPlaceGroup: (placeId: string, groupId?: string) => Promise<void>;
   
   // Itinerary operations
   moveToItinerary: (place: BacklogPlace, date: string, time: string) => Promise<void>;
@@ -56,6 +62,10 @@ export const useTripStore = create<TripStore>((set, get) => ({
       const trip = await tripApi.getById(tripId);
       console.log('Fetched trip:', trip);
       console.log('Trip _id:', trip._id);
+      // 確保 place_groups 存在
+      if (!trip.place_groups) {
+        trip.place_groups = [];
+      }
       set({ currentTrip: trip, isLoading: false });
       
       // Auto-select first date
@@ -67,6 +77,85 @@ export const useTripStore = create<TripStore>((set, get) => ({
       toast.error('無法載入行程');
     }
   },
+
+  // ===== Group Operations =====
+  addPlaceGroup: async (group) => {
+    const { currentTrip } = get();
+    if (!currentTrip || !currentTrip._id) {
+      toast.error('行程尚未載入');
+      return;
+    }
+
+    try {
+      const newGroup: PlaceGroup = {
+        id: `group-${Date.now()}`,
+        ...group,
+        created_at: new Date().toISOString(),
+      };
+
+      set({
+        currentTrip: {
+          ...currentTrip,
+          place_groups: [...(currentTrip.place_groups || []), newGroup],
+        },
+      });
+      toast.success('已新增群組');
+    } catch (error) {
+      toast.error('新增群組失敗');
+    }
+  },
+
+  removePlaceGroup: async (groupId) => {
+    const { currentTrip } = get();
+    if (!currentTrip) return;
+
+    // 移除群組時，將該群組的景點改為無群組
+    const updatedPlaces = currentTrip.backlog_places.map((place) => ({
+      ...place,
+      group_id: place.group_id === groupId ? undefined : place.group_id,
+    }));
+
+    set({
+      currentTrip: {
+        ...currentTrip,
+        place_groups: (currentTrip.place_groups || []).filter((g) => g.id !== groupId),
+        backlog_places: updatedPlaces,
+      },
+    });
+    toast.success('已移除群組');
+  },
+
+  updatePlaceGroup: async (groupId, updates) => {
+    const { currentTrip } = get();
+    if (!currentTrip) return;
+
+    set({
+      currentTrip: {
+        ...currentTrip,
+        place_groups: (currentTrip.place_groups || []).map((g) =>
+          g.id === groupId ? { ...g, ...updates } : g
+        ),
+      },
+    });
+  },
+
+  updateBacklogPlaceGroup: async (placeId, groupId) => {
+    const { currentTrip } = get();
+    if (!currentTrip) return;
+
+    const updatedPlaces = currentTrip.backlog_places.map((place) =>
+      place.id === placeId ? { ...place, group_id: groupId } : place
+    );
+
+    set({
+      currentTrip: {
+        ...currentTrip,
+        backlog_places: updatedPlaces,
+      },
+    });
+  },
+
+  // ===== Backlog Operations =====
 
   addBacklogPlace: async (place) => {
     const { currentTrip } = get();

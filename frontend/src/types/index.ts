@@ -16,6 +16,14 @@ export interface Coordinates {
   lng: number;
 }
 
+export interface PlaceGroup {
+  id: string;
+  name: string;
+  color?: string; // HEX color code
+  description?: string;
+  created_at?: string;
+}
+
 export interface BacklogPlace {
   id: string;
   name: string;
@@ -27,6 +35,7 @@ export interface BacklogPlace {
   image_url?: string;
   rating?: number;
   priority: number;
+  group_id?: string; // Reference to PlaceGroup
   created_at?: string; // ISO timestamp for sorting by addition time
 }
 
@@ -84,6 +93,7 @@ export interface Trip {
   cover_image?: string;
   tags: string[];
   backlog_places: BacklogPlace[];
+  place_groups: PlaceGroup[]; // Groups for organizing backlog places
   itinerary: DayItinerary[];
   total_budget: number;
   user_id?: string;

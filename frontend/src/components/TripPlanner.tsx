@@ -24,6 +24,7 @@ const AddPlaceModal = lazy(() => import('./AddPlaceModal'));
 const ImportGoogleMapsModal = lazy(() => import('./ImportGoogleMapsModal'));
 const AddCustomActivityModal = lazy(() => import('./AddCustomActivityModal'));
 const AccommodationModal = lazy(() => import('./AccommodationModal'));
+const PlaceGroupModal = lazy(() => import('./PlaceGroupModal'));
 
 interface TripPlannerProps {
   isReadOnly?: boolean;
@@ -43,16 +44,22 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
     optimizeRoute,
     addCustomActivity,
     setDayAccommodation,
+    addPlaceGroup,
+    removePlaceGroup,
+    updatePlaceGroup,
+    updateBacklogPlaceGroup,
   } = useTripStore();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isCustomActivityModalOpen, setIsCustomActivityModalOpen] = useState(false);
   const [isAccommodationModalOpen, setIsAccommodationModalOpen] = useState(false);
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [sortBy, setSortBy] = useState<'name' | 'category' | 'time'>('time');
+  const [sortBy, setSortBy] = useState<'name' | 'category' | 'time' | 'group'>('time');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc'); // desc = 最新在前, asc = 最舊在前
   const [scheduleStartHour, setScheduleStartHour] = useState(6);
+  const [selectedGroupFilter, setSelectedGroupFilter] = useState<string | null>(null);
 
   // Get current day's itinerary
   const currentDayItinerary = useMemo(() => {
@@ -72,7 +79,13 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   // Get sorted backlog places
   const sortedBacklogPlaces = useMemo(() => {
     if (!currentTrip) return [];
-    const places = [...currentTrip.backlog_places];
+    let places = [...currentTrip.backlog_places];
+
+    // Filter by group if selected
+    if (selectedGroupFilter) {
+      places = places.filter((p) => p.group_id === selectedGroupFilter);
+    }
+
     return places.sort((a, b) => {
       let comparison = 0;
       
@@ -80,6 +93,8 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
         comparison = a.name.localeCompare(b.name, 'zh-TW');
       } else if (sortBy === 'category') {
         comparison = a.category.localeCompare(b.category);
+      } else if (sortBy === 'group') {
+        comparison = (a.group_id || '').localeCompare(b.group_id || '');
       } else { // sortBy === 'time'
         // Treat null/undefined created_at as very old (sort to end when desc, start when asc)
         const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
@@ -90,7 +105,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
       // Apply sort direction (desc reverses the comparison)
       return sortDirection === 'desc' ? -comparison : comparison;
     });
-  }, [currentTrip, sortBy, sortDirection]);
+  }, [currentTrip, sortBy, sortDirection, selectedGroupFilter]);
 
   const handleAddToItinerary = useCallback((place: BacklogPlace) => {
     if (!selectedDate) return;
@@ -232,7 +247,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
               </div>
               
               {/* Sort Controls */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap gap-2">
                 <ArrowDownUp size={14} className="text-gray-400 dark:text-gray-500" />
                 <span className="text-xs text-gray-500 dark:text-gray-400">排序：</span>
                 <button
@@ -272,7 +287,59 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                 >
                   類別
                 </button>
+                <button
+                  onClick={() => setSortBy('group')}
+                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                    sortBy === 'group'
+                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  群組
+                </button>
+                <button
+                  onClick={() => setIsGroupModalOpen(true)}
+                  disabled={isReadOnly}
+                  className="ml-auto px-2 py-1 text-xs bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  title="管理景點群組"
+                >
+                  🏷️ 群組管理
+                </button>
               </div>
+
+              {/* Group Filter */}
+              {(currentTrip?.place_groups?.length ?? 0) > 0 && (
+                <div className="flex items-center gap-2 px-2 flex-wrap">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">篩選：</span>
+                  <button
+                    onClick={() => setSelectedGroupFilter(null)}
+                    className={`px-2 py-1 text-xs rounded transition-colors ${
+                      selectedGroupFilter === null
+                        ? 'bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-100 font-medium'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    全部
+                  </button>
+                  {currentTrip.place_groups.map((group) => (
+                    <button
+                      key={group.id}
+                      onClick={() => setSelectedGroupFilter(selectedGroupFilter === group.id ? null : group.id)}
+                      className={`px-2 py-1 text-xs rounded transition-colors flex items-center gap-1 ${
+                        selectedGroupFilter === group.id
+                          ? 'font-medium text-white'
+                          : 'text-white hover:opacity-80'
+                      }`}
+                      style={{
+                        backgroundColor: group.color || '#6366f1',
+                        opacity: selectedGroupFilter === group.id ? 1 : 0.6,
+                      }}
+                    >
+                      {group.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="p-4 space-y-3 min-h-[300px] max-h-[600px] overflow-y-auto bg-gray-50 dark:bg-gray-900">
@@ -289,6 +356,8 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                     place={place}
                     onRemove={() => !isReadOnly && removeBacklogPlace(place.id)}
                     onAddToItinerary={selectedDate && !isReadOnly ? () => handleAddToItinerary(place) : undefined}
+                    onChangeGroup={(groupId) => !isReadOnly && updateBacklogPlaceGroup(place.id, groupId)}
+                    availableGroups={currentTrip?.place_groups || []}
                     isReadOnly={isReadOnly}
                   />
                 ))
@@ -480,6 +549,20 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
               notes: currentAccommodation.notes,
               time: currentAccommodation.time,
             } : null}
+          />
+        </Suspense>
+      )}
+
+      {/* Place Group Modal */}
+      {isGroupModalOpen && (
+        <Suspense fallback={null}>
+          <PlaceGroupModal
+            isOpen={isGroupModalOpen}
+            groups={currentTrip?.place_groups || []}
+            onClose={() => setIsGroupModalOpen(false)}
+            onAddGroup={addPlaceGroup}
+            onRemoveGroup={removePlaceGroup}
+            onUpdateGroup={updatePlaceGroup}
           />
         </Suspense>
       )}
