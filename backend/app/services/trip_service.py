@@ -155,6 +155,13 @@ class TripService:
                                 "lat": place["coordinates"]["lat"],
                                 "lng": place["coordinates"]["lng"]
                             }
+                elif key == "place_groups":
+                    # Ensure all groups have IDs and metadata
+                    for group in value:
+                        if not group.get("id"):
+                            group["id"] = generate_id()
+                        if not group.get("created_at"):
+                            group["created_at"] = datetime.utcnow()
                 elif key == "itinerary":
                     # Ensure all items have IDs
                     for day in value:

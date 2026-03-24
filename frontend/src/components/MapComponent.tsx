@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { GoogleMap, Marker, Polyline, InfoWindow } from '@react-google-maps/api';
+import { useMemo, useState, useEffect } from 'react';
+import { GoogleMap, Marker, InfoWindow, DirectionsRenderer, Polyline } from '@react-google-maps/api';
 import { Loader2, MapPin } from 'lucide-react';
 import { useTripStore } from '../store/tripStore';
 import { useGoogleMaps } from '../hooks/useGoogleMaps';
@@ -61,10 +61,11 @@ interface MapComponentProps {
 }
 
 export default function MapComponent({ apiKey }: MapComponentProps) {
-  const { currentTrip, selectedDate } = useTripStore();
+  const { currentTrip, selectedDate, travelMode } = useTripStore();
   const { isLoaded, loadError } = useGoogleMaps();
   const [showAllPlaces, setShowAllPlaces] = useState(false);
   const [hoveredMarker, setHoveredMarker] = useState<string | null>(null);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
 
   // Get markers based on display mode
   const markers = useMemo(() => {
@@ -121,6 +122,49 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
         }));
     }
   }, [currentTrip, selectedDate, showAllPlaces]);
+
+  // 當地點或交通方式改變時，更新導航路徑
+  useEffect(() => {
+    if (!isLoaded || showAllPlaces || markers.length < 2) {
+      setDirections(null);
+      return;
+    }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    const origin = markers[0].position;
+    const destination = markers[markers.length - 1].position;
+    const waypoints = markers.slice(1, -1).map(m => ({
+      location: m.position,
+      stopover: true,
+    }));
+
+    // 對應 Google Maps API 的 TravelMode
+    const googleTravelMode = {
+      driving: google.maps.TravelMode.DRIVING,
+      walking: google.maps.TravelMode.WALKING,
+      transit: google.maps.TravelMode.TRANSIT,
+      bicycling: google.maps.TravelMode.BICYCLING,
+    }[travelMode as 'driving' | 'walking' | 'transit' | 'bicycling'];
+
+    directionsService.route(
+      {
+        origin,
+        destination,
+        waypoints,
+        travelMode: googleTravelMode,
+        optimizeWaypoints: false, // 我們已經在後端優化過了
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+        } else {
+          console.error(`Directions request failed: ${status}`);
+          setDirections(null);
+        }
+      }
+    );
+  }, [isLoaded, markers, travelMode, showAllPlaces]);
 
   // Calculate map center
   const center = useMemo(() => {
@@ -339,8 +383,23 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
         );
       })}
 
-      {/* Route Polyline - 只在當日模式顯示 */}
-      {!showAllPlaces && polylinePath.length > 1 && (
+      {/* 路徑渲染 (確切路線) - 當日模式且有導航結果時顯示 */}
+      {!showAllPlaces && directions && (
+        <DirectionsRenderer
+          directions={directions}
+          options={{
+            suppressMarkers: true, // 使用我們自訂的 Marker
+            polylineOptions: {
+              strokeColor: '#22c55e',
+              strokeOpacity: 0.8,
+              strokeWeight: 5,
+            },
+          }}
+        />
+      )}
+
+      {/* 備用直線導航 - 如果連 directions 都沒有取得成功時 (例如 API 限制) */}
+      {!showAllPlaces && !directions && polylinePath.length > 1 && (
         <Polyline
           path={polylinePath}
           options={{

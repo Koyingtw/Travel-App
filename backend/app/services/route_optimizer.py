@@ -158,7 +158,8 @@ class RouteOptimizer:
 async def optimize_route(
     points: List[RoutePoint],
     start_point_id: Optional[str] = None,
-    end_point_id: Optional[str] = None
+    end_point_id: Optional[str] = None,
+    travel_mode: str = "driving"
 ) -> OptimizedRoute:
     """
     Main function to optimize a route.
@@ -167,6 +168,7 @@ async def optimize_route(
         points: List of route points to optimize
         start_point_id: ID of the point that must be first
         end_point_id: ID of the point that must be last
+        travel_mode: Type of travel (driving, walking, transit, bicycling)
     
     Returns:
         OptimizedRoute with ordered points and metrics
@@ -191,6 +193,18 @@ async def optimize_route(
     ordered_points, total_distance, duration = RouteOptimizer.optimize_route(
         points, start_index, end_index
     )
+
+    # Adjust duration based on travel mode (Heuristic improvements)
+    # Base estimation in RouteOptimizer.optimize_route is about 1.2 min/km (driving)
+    if travel_mode == "walking":
+        # ~5 km/h walking -> 12 min/km
+        duration = int(total_distance * 12)
+    elif travel_mode == "bicycling":
+        # ~15 km/h cycling -> 4 min/km
+        duration = int(total_distance * 4)
+    elif travel_mode == "transit":
+        # Transit usually takes longer due to waiting and stops, roughly 2.5x driving
+        duration = int(total_distance * 3)
     
     return OptimizedRoute(
         ordered_points=ordered_points,

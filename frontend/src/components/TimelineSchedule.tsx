@@ -417,6 +417,7 @@ export default function TimelineSchedule({
                       name: nextItem.place_name,
                       coordinates: nextItem.coordinates,
                     }}
+                    departureTime={item.end_time || item.time}
                   />
                 </div>
               );

@@ -54,6 +54,7 @@ export interface ItineraryItem {
   completed: boolean;
   order: number;
   is_custom?: boolean; // 自訂活動標記（如交通、休息等）
+  group_id?: string; // 記錄原始所屬群組，移回時恢復
   created_at?: string; // 保留原始加入候選清單的時間，用於移回時恢復
 }
 
@@ -133,6 +134,7 @@ export interface TripUpdate {
   cover_image?: string;
   tags?: string[];
   backlog_places?: BacklogPlace[];
+  place_groups?: PlaceGroup[];
   itinerary?: DayItinerary[];
 }
 
@@ -150,6 +152,7 @@ export interface OptimizeRouteRequest {
   start_point_id?: string;
   end_point_id?: string;
   optimize_for?: 'distance' | 'time';
+  travel_mode?: 'driving' | 'walking' | 'transit' | 'bicycling';
 }
 
 export interface OptimizedRoute {

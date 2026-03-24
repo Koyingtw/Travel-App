@@ -48,6 +48,8 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
     removePlaceGroup,
     updatePlaceGroup,
     updateBacklogPlaceGroup,
+    travelMode,
+    setTravelMode,
   } = useTripStore();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -135,7 +137,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   const handleOptimizeRoute = async () => {
     if (!selectedDate) return;
     setIsOptimizing(true);
-    await optimizeRoute(selectedDate);
+    await optimizeRoute(selectedDate, travelMode);
     setIsOptimizing(false);
   };
 
@@ -437,6 +439,22 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   <PlusCircle size={16} />
                   <span>自訂活動</span>
                 </button>
+
+                {/* Travel Mode Selector */}
+                <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">方式：</span>
+                  <select
+                    value={travelMode}
+                    onChange={(e) => setTravelMode(e.target.value as any)}
+                    className="bg-transparent text-sm text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer"
+                  >
+                    <option value="driving">🚗 開車</option>
+                    <option value="transit">🚌 大眾運輸</option>
+                    <option value="walking">👣 走路</option>
+                    <option value="bicycling">🚲 腳踏車</option>
+                  </select>
+                </div>
+
                 <button
                   onClick={handleOptimizeRoute}
                   disabled={isOptimizing || !currentDayItinerary || currentDayItinerary.items.length < 2 || isReadOnly}
@@ -509,6 +527,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
             isOpen={isAddModalOpen}
             onClose={() => setIsAddModalOpen(false)}
             onAdd={(place: Omit<BacklogPlace, 'id'>) => addBacklogPlace(place)}
+            groups={currentTrip?.place_groups || []}
           />
         </Suspense>
       )}

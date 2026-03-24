@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigation, Clock, MapPin } from 'lucide-react';
+import { useTripStore } from '../store/tripStore';
 import type { Coordinates } from '../types';
 
 interface RouteInfoProps {
@@ -11,6 +12,7 @@ interface RouteInfoProps {
     name: string;
     coordinates?: Coordinates;
   };
+  departureTime?: string; // 格式: HH:mm
 }
 
 interface RouteData {
@@ -20,7 +22,8 @@ interface RouteData {
   durationValue: number; // in seconds
 }
 
-export default function RouteInfo({ from, to }: RouteInfoProps) {
+export default function RouteInfo({ from, to, departureTime }: RouteInfoProps) {
+  const { travelMode, selectedDate } = useTripStore();
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -60,23 +63,60 @@ export default function RouteInfo({ from, to }: RouteInfoProps) {
         // 使用 Google Maps Distance Matrix API
         const service = new google.maps.DistanceMatrixService();
         
+        // 對應 Google Maps API 的 TravelMode
+        const googleTravelMode = {
+          driving: google.maps.TravelMode.DRIVING,
+          walking: google.maps.TravelMode.WALKING,
+          transit: google.maps.TravelMode.TRANSIT,
+          bicycling: google.maps.TravelMode.BICYCLING,
+        }[travelMode as 'driving' | 'walking' | 'transit' | 'bicycling'];
+
+        // 準備出發時間 (Date 物件)
+        let drivingOptions: google.maps.DrivingOptions | undefined;
+        let transitOptions: google.maps.TransitOptions | undefined;
+
+        if (departureTime && selectedDate) {
+          const [hours, minutes] = departureTime.split(':').map(Number);
+          const date = new Date(selectedDate);
+          date.setHours(hours, minutes, 0, 0);
+          
+          // 如果設定的時間已過，Google Maps 可能會報錯，但這裡我們假設是未來時間進行計算
+          if (googleTravelMode === google.maps.TravelMode.DRIVING) {
+            drivingOptions = {
+              departureTime: date,
+              trafficModel: google.maps.TrafficModel.BEST_GUESS,
+            };
+          } else if (googleTravelMode === google.maps.TravelMode.TRANSIT) {
+            transitOptions = {
+              departureTime: date,
+            };
+          }
+        }
+
         service.getDistanceMatrix(
           {
             origins: [new google.maps.LatLng(from.coordinates!.lat, from.coordinates!.lng)],
             destinations: [new google.maps.LatLng(to.coordinates!.lat, to.coordinates!.lng)],
-            travelMode: google.maps.TravelMode.DRIVING,
+            travelMode: googleTravelMode,
             unitSystem: google.maps.UnitSystem.METRIC,
+            drivingOptions,
+            transitOptions,
           },
           (response, status) => {
             setLoading(false);
             
             if (status === 'OK' && response?.rows[0]?.elements[0]?.status === 'OK') {
               const result = response.rows[0].elements[0];
+              
+              // 優先使用考量流量的時間 (duration_in_traffic)
+              const durationText = result.duration_in_traffic?.text || result.duration.text;
+              const durationValue = result.duration_in_traffic?.value || result.duration.value;
+
               setRouteData({
                 distance: result.distance.text,
-                duration: result.duration.text,
+                duration: durationText,
                 distanceValue: result.distance.value,
-                durationValue: result.duration.value,
+                durationValue: durationValue,
               });
             } else {
               setError(true);
@@ -91,7 +131,7 @@ export default function RouteInfo({ from, to }: RouteInfoProps) {
     };
 
     checkAndLoadRoute();
-  }, [from.coordinates, to.coordinates]);
+  }, [from.coordinates, to.coordinates, travelMode, departureTime, selectedDate]);
 
   // 生成 Google Maps 導航連結
   const getNavigationUrl = () => {
@@ -100,7 +140,18 @@ export default function RouteInfo({ from, to }: RouteInfoProps) {
     const origin = `${from.coordinates.lat},${from.coordinates.lng}`;
     const destination = `${to.coordinates.lat},${to.coordinates.lng}`;
     
-    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+    // Google Maps dir API travelmode 參數對應
+    // https://developers.google.com/maps/documentation/urls/get-started#directions-action
+    const googleMapsModeMap: Record<string, string> = {
+      driving: 'driving',
+      walking: 'walking',
+      transit: 'transit',
+      bicycling: 'bicycling'
+    };
+    
+    const mode = googleMapsModeMap[travelMode] || 'driving';
+    
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
   };
 
   if (error || (!from.coordinates || !to.coordinates)) {

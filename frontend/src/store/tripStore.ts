@@ -9,10 +9,12 @@ interface TripStore {
   isLoading: boolean;
   error: string | null;
   selectedDate: string | null;
+  travelMode: 'driving' | 'walking' | 'transit' | 'bicycling';
 
   // Actions
   setCurrentTrip: (trip: Trip | null) => void;
   setSelectedDate: (date: string | null) => void;
+  setTravelMode: (mode: 'driving' | 'walking' | 'transit' | 'bicycling') => void;
   fetchTrip: (tripId: string) => Promise<void>;
   
   // Group operations
@@ -37,7 +39,7 @@ interface TripStore {
   removeItineraryItem: (date: string, itemId: string) => Promise<void>;
   
   // Route optimization
-  optimizeRoute: (date: string) => Promise<void>;
+  optimizeRoute: (date: string, travelMode?: 'driving' | 'walking' | 'transit' | 'bicycling') => Promise<void>;
   
   // Notes & Budget
   updateDailyNotes: (date: string, notes: string) => Promise<void>;
@@ -51,10 +53,13 @@ export const useTripStore = create<TripStore>((set, get) => ({
   isLoading: false,
   error: null,
   selectedDate: null,
+  travelMode: 'driving',
 
   setCurrentTrip: (trip) => set({ currentTrip: trip }),
   
   setSelectedDate: (date) => set({ selectedDate: date }),
+
+  setTravelMode: (mode) => set({ travelMode: mode }),
 
   fetchTrip: async (tripId: string) => {
     set({ isLoading: true, error: null });
@@ -93,12 +98,20 @@ export const useTripStore = create<TripStore>((set, get) => ({
         created_at: new Date().toISOString(),
       };
 
+      const updatedTrip = {
+        ...currentTrip,
+        place_groups: [...(currentTrip.place_groups || []), newGroup],
+      };
+
       set({
-        currentTrip: {
-          ...currentTrip,
-          place_groups: [...(currentTrip.place_groups || []), newGroup],
-        },
+        currentTrip: updatedTrip,
       });
+
+      // Persist to backend
+      await tripApi.update(currentTrip._id, {
+        place_groups: updatedTrip.place_groups,
+      });
+
       toast.success('已新增群組');
     } catch (error) {
       toast.error('新增群組失敗');
@@ -115,33 +128,56 @@ export const useTripStore = create<TripStore>((set, get) => ({
       group_id: place.group_id === groupId ? undefined : place.group_id,
     }));
 
+    const updatedTrip = {
+      ...currentTrip,
+      place_groups: (currentTrip.place_groups || []).filter((g) => g.id !== groupId),
+      backlog_places: updatedPlaces,
+    };
+
     set({
-      currentTrip: {
-        ...currentTrip,
-        place_groups: (currentTrip.place_groups || []).filter((g) => g.id !== groupId),
-        backlog_places: updatedPlaces,
-      },
+      currentTrip: updatedTrip,
     });
-    toast.success('已移除群組');
+
+    // Persist to backend
+    try {
+      await tripApi.update(currentTrip._id, {
+        place_groups: updatedTrip.place_groups,
+        backlog_places: updatedTrip.backlog_places,
+      });
+      toast.success('已移除群組');
+    } catch (error) {
+      toast.error('移除群組失敗');
+    }
   },
 
   updatePlaceGroup: async (groupId, updates) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
+
+    const updatedGroups = (currentTrip.place_groups || []).map((g) =>
+      g.id === groupId ? { ...g, ...updates } : g
+    );
 
     set({
       currentTrip: {
         ...currentTrip,
-        place_groups: (currentTrip.place_groups || []).map((g) =>
-          g.id === groupId ? { ...g, ...updates } : g
-        ),
+        place_groups: updatedGroups,
       },
     });
+
+    // Persist to backend
+    try {
+      await tripApi.update(currentTrip._id, {
+        place_groups: updatedGroups,
+      });
+    } catch (error) {
+      console.error('Failed to update group:', error);
+    }
   },
 
   updateBacklogPlaceGroup: async (placeId, groupId) => {
     const { currentTrip } = get();
-    if (!currentTrip) return;
+    if (!currentTrip || !currentTrip._id) return;
 
     const updatedPlaces = currentTrip.backlog_places.map((place) =>
       place.id === placeId ? { ...place, group_id: groupId } : place
@@ -153,6 +189,15 @@ export const useTripStore = create<TripStore>((set, get) => ({
         backlog_places: updatedPlaces,
       },
     });
+
+    // Persist to backend
+    try {
+      await tripApi.update(currentTrip._id, {
+        backlog_places: updatedPlaces,
+      });
+    } catch (error) {
+      console.error('Failed to update place group:', error);
+    }
   },
 
   // ===== Backlog Operations =====
@@ -314,6 +359,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
       category: place.category,
       completed: false,
       order: 0,
+      group_id: place.group_id, // 儲存群組 ID
       created_at: place.created_at, // 保留原始加入時間
     };
 
@@ -591,6 +637,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
         category: itemToRemove.category,
         notes: itemToRemove.notes,
         priority: 0,
+        group_id: itemToRemove.group_id, // 恢復群組 ID
         created_at: itemToRemove.created_at || new Date().toISOString(), // 保留原始時間
       };
       newBacklogPlaces = [...currentTrip.backlog_places, newPlace];
@@ -626,7 +673,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
     }
   },
 
-  optimizeRoute: async (date) => {
+  optimizeRoute: async (date, travelMode = 'driving') => {
     const { currentTrip } = get();
     if (!currentTrip || !currentTrip._id) return;
 
@@ -654,7 +701,7 @@ export const useTripStore = create<TripStore>((set, get) => ({
     }));
 
     try {
-      const optimized = await routeApi.optimize({ points });
+      const optimized = await routeApi.optimize({ points, travel_mode: travelMode });
       
       // Reorder items based on optimization
       const idToItem = new Map(dayItinerary.items.map((item) => [item.id, item]));

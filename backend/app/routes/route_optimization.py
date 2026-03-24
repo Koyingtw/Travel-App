@@ -38,7 +38,8 @@ async def optimize_route_endpoint(request: OptimizeRouteRequest):
     result = await optimize_route(
         points=request.points,
         start_point_id=request.start_point_id,
-        end_point_id=request.end_point_id
+        end_point_id=request.end_point_id,
+        travel_mode=request.travel_mode
     )
     
     return result

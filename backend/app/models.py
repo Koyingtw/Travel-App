@@ -133,6 +133,7 @@ class TripUpdate(BaseModel):
     cover_image: Optional[str] = None
     tags: Optional[List[str]] = None
     backlog_places: Optional[List[BacklogPlace]] = None
+    place_groups: Optional[List[PlaceGroup]] = None
     itinerary: Optional[List[DayItinerary]] = None
 
 
@@ -199,12 +200,21 @@ class RoutePoint(BaseModel):
     lng: float = Field(..., ge=-180, le=180)
 
 
+class TravelMode(str, Enum):
+    """Travel modes for route optimization."""
+    DRIVING = "driving"
+    WALKING = "walking"
+    TRANSIT = "transit"
+    BICYCLING = "bicycling"
+
+
 class OptimizeRouteRequest(BaseModel):
     """Request for route optimization."""
     points: List[RoutePoint] = Field(..., min_length=2, description="Points to optimize")
     start_point_id: Optional[str] = Field(default=None, description="Fixed starting point ID")
     end_point_id: Optional[str] = Field(default=None, description="Fixed ending point ID")
     optimize_for: str = Field(default="distance", description="Optimize for: distance or time")
+    travel_mode: TravelMode = Field(default=TravelMode.DRIVING, description="Travel mode for optimization")
 
 
 class OptimizedRoute(BaseModel):

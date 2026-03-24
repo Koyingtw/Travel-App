@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Plus, X, Clock, MapPin, Check } from 'lucide-react';
+import { Plus, X, Clock, MapPin, Check, FolderOpen } from 'lucide-react';
 import PlaceAutocomplete from './PlaceAutocomplete';
-import type { BacklogPlace, PlaceCategory } from '../types';
+import type { BacklogPlace, PlaceCategory, PlaceGroup } from '../types';
 
 interface AddPlaceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (place: Omit<BacklogPlace, 'id'>) => void;
+  groups?: PlaceGroup[];
 }
 
 const categories: { value: PlaceCategory; label: string; emoji: string }[] = [
@@ -81,7 +82,7 @@ function mapGoogleTypeToCategory(types: string[]): PlaceCategory {
   return 'other';
 }
 
-export default function AddPlaceModal({ isOpen, onClose, onAdd }: AddPlaceModalProps) {
+export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: AddPlaceModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -89,6 +90,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd }: AddPlaceModalP
     category: 'other' as PlaceCategory,
     notes: '',
     priority: 0,
+    group_id: undefined as string | undefined,
     lat: null as number | null,
     lng: null as number | null,
     rating: null as number | null,
@@ -131,6 +133,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd }: AddPlaceModalP
       category: formData.category,
       notes: formData.notes.trim() || undefined,
       priority: formData.priority,
+      group_id: formData.group_id,
       coordinates: formData.lat !== null && formData.lng !== null
         ? { lat: formData.lat, lng: formData.lng }
         : undefined,
@@ -152,6 +155,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd }: AddPlaceModalP
       category: 'other',
       notes: '',
       priority: 0,
+      group_id: undefined,
       lat: null,
       lng: null,
       rating: null,
@@ -326,6 +330,30 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd }: AddPlaceModalP
                 ))}
               </div>
             </div>
+
+            {/* Group Assignment */}
+            {groups.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  分派至群組
+                </label>
+                <div className="relative">
+                  <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
+                  <select
+                    value={formData.group_id || ''}
+                    onChange={(e) => setFormData({ ...formData, group_id: e.target.value || undefined })}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 appearance-none"
+                  >
+                    <option value="">（不分配群組）</option>
+                    {groups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Priority */}
             <div>
