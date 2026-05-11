@@ -62,7 +62,8 @@ interface MapComponentProps {
 
 export default function MapComponent({ apiKey }: MapComponentProps) {
   const { currentTrip, selectedDate, travelMode } = useTripStore();
-  const { isLoaded, loadError } = useGoogleMaps();
+  const resolvedApiKey = apiKey || import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const { isLoaded, loadError } = useGoogleMaps(resolvedApiKey);
   const [showAllPlaces, setShowAllPlaces] = useState(false);
   const [hoveredMarker, setHoveredMarker] = useState<string | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
@@ -200,7 +201,7 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
   }
 
   // Fallback UI when no API key
-  if (!apiKey && !(import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY) {
+  if (!resolvedApiKey) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-forest-50 to-maple-50 rounded-xl p-6">
         <MapPin size={64} className="text-maple-400 mb-4" />
