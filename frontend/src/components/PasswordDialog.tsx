@@ -7,6 +7,7 @@ interface PasswordDialogProps {
   onVerify: (password: string) => Promise<boolean>;
   title?: string;
   description?: string;
+  submitLabel?: string;
 }
 
 export function PasswordDialog({
@@ -14,7 +15,8 @@ export function PasswordDialog({
   onClose,
   onVerify,
   title = '輸入密碼',
-  description = '此行程受密碼保護，請輸入密碼以解鎖編輯功能'
+  description = '此行程受密碼保護，請輸入密碼以解鎖編輯功能',
+  submitLabel = '解鎖'
 }: PasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -104,7 +106,7 @@ export function PasswordDialog({
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isVerifying || !password.trim()}
               >
-                {isVerifying ? '驗證中...' : '解鎖'}
+                {isVerifying ? '驗證中...' : submitLabel}
               </button>
             </div>
           </div>

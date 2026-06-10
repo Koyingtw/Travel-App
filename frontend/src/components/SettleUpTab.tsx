@@ -4,7 +4,7 @@ import {
   Camera, Loader2, ArrowRight, X 
 } from 'lucide-react';
 import { expenseApi, tripApi } from '../services/api';
-import type { SettleUpExpense, ExpensesDashboard, SimplifiedSettlement, ExpenseSplit } from '../types';
+import type { SettleUpExpense, ExpensesDashboard, SimplifiedSettlement, ExpenseSplit, ExpenseItem } from '../types';
 import toast from 'react-hot-toast';
 
 interface SettleUpTabProps {
@@ -33,6 +33,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
   // Modals / forms
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [showItemSplittingWizard, setShowItemSplittingWizard] = useState(false);
+  const [itemAssignments, setItemAssignments] = useState<Record<number, string[]>>({});
   
   const [expenseForm, setExpenseForm] = useState({
     id: '',
@@ -45,7 +47,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
     category: 'other',
     splits: [] as { member_id: string; amount: string }[],
     is_settlement: false,
-    payee_id: ''
+    payee_id: '',
+    items: [] as ExpenseItem[]
   });
 
   const loadDashboard = async () => {
@@ -142,7 +145,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
         category: 'other',
         splits: [],
         is_settlement: true,
-        payee_id: settlementDetails.to_id
+        payee_id: settlementDetails.to_id,
+        items: []
       });
     } else {
       setExpenseForm({
@@ -156,7 +160,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
         category: 'other',
         splits: dashboard.members.map(m => ({ member_id: m.id, amount: '' })),
         is_settlement: false,
-        payee_id: defaultPayee
+        payee_id: defaultPayee,
+        items: []
       });
     }
     setIsAddingExpense(true);
@@ -217,7 +222,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
       splits: formattedSplits,
       is_settlement,
       payee_id: is_settlement ? payee_id : undefined,
-      category
+      category,
+      items: expenseForm.items
     };
 
     try {
@@ -252,15 +258,28 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
     try {
       const result = await expenseApi.scanReceipt(tripId, dummyFile);
       if (result.success) {
+        const items = (result as any).items || [];
         setExpenseForm(prev => ({
           ...prev,
           description: result.description,
           amount: result.amount.toString(),
           currency: result.currency,
           category: result.category,
-          date: result.date
+          date: result.date,
+          items: items
         }));
-        toast.success(`OCR 掃描成功 (信心度: ${((result as any).confidence * 100).toFixed(0)}%)`);
+        
+        if (items && items.length > 0) {
+          const initialAssignments: Record<number, string[]> = {};
+          items.forEach((_: any, index: number) => {
+            initialAssignments[index] = dashboard?.members.map(m => m.id) || [];
+          });
+          setItemAssignments(initialAssignments);
+          setShowItemSplittingWizard(true);
+          toast.success('已載入模擬發票明細！');
+        } else {
+          toast.success(`OCR 掃描成功 (信心度: ${((result as any).confidence * 100).toFixed(0)}%)`);
+        }
       }
     } catch (error) {
       toast.error('OCR 掃描失敗');
@@ -278,21 +297,85 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
     try {
       const result = await expenseApi.scanReceipt(tripId, file);
       if (result.success) {
+        const items = (result as any).items || [];
         setExpenseForm(prev => ({
           ...prev,
           description: result.description,
           amount: result.amount.toString(),
           currency: result.currency,
           category: result.category,
-          date: result.date
+          date: result.date,
+          items: items
         }));
-        toast.success('發票自動識別成功！');
+        
+        if (items && items.length > 0) {
+          const initialAssignments: Record<number, string[]> = {};
+          items.forEach((_: any, index: number) => {
+            initialAssignments[index] = dashboard?.members.map(m => m.id) || [];
+          });
+          setItemAssignments(initialAssignments);
+          setShowItemSplittingWizard(true);
+          toast.success('發票明細識別成功，請分配分帳！');
+        } else {
+          toast.success('發票自動識別成功！');
+        }
       }
     } catch (error) {
       toast.error('掃描失敗，請手動輸入');
     } finally {
       setIsScanning(false);
     }
+  };
+
+  const handleApplyItemSplit = () => {
+    // 1. Check if all items are assigned to at least 1 person
+    const unassignedItems = expenseForm.items.filter((_, index) => {
+      const assigned = itemAssignments[index] || [];
+      return assigned.length === 0;
+    });
+
+    if (unassignedItems.length > 0) {
+      toast.error(`請指派所有品項！尚有 ${unassignedItems.length} 個項目無人認領`);
+      return;
+    }
+
+    if (!dashboard) return;
+
+    // 2. Calculate splits
+    const memberTotals: Record<string, number> = {};
+    dashboard.members.forEach(m => {
+      memberTotals[m.id] = 0;
+    });
+
+    expenseForm.items.forEach((item, index) => {
+      const assigned = itemAssignments[index] || [];
+      const share = item.amount / assigned.length;
+      assigned.forEach(mid => {
+        memberTotals[mid] = (memberTotals[mid] || 0) + share;
+      });
+    });
+
+    // 3. Update splits in form
+    const newSplits = dashboard.members.map(m => ({
+      member_id: m.id,
+      amount: round(memberTotals[m.id] || 0).toString()
+    }));
+
+    // Update form's items with their assignments, so they save in backend
+    const updatedItems = expenseForm.items.map((item, index) => ({
+      ...item,
+      assigned_member_ids: itemAssignments[index] || []
+    }));
+
+    setExpenseForm(prev => ({
+      ...prev,
+      split_type: 'exact',
+      splits: newSplits,
+      items: updatedItems
+    }));
+
+    setShowItemSplittingWizard(false);
+    toast.success('已依發票明細分配分帳金額！');
   };
 
   const handleExportExcel = () => {
@@ -813,6 +896,74 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
               ) : (
                 /* Split configuration for normal expenses */
                 <div className="space-y-3 pt-2">
+                  {/* Linked Receipt Items */}
+                  {expenseForm.items && expenseForm.items.length > 0 ? (
+                    <div className="bg-primary-50/40 dark:bg-primary-950/10 border border-primary-100 dark:border-primary-900/20 p-4 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-primary-600 dark:text-primary-400 flex items-center space-x-1.5">
+                          <span>🧾 已連結發票明細 ({expenseForm.items.length} 項)</span>
+                        </span>
+                        <div className="flex items-center space-x-3">
+                          <button
+                            type="button"
+                            onClick={() => setShowItemSplittingWizard(true)}
+                            className="text-xs font-bold text-primary-500 hover:text-primary-600 dark:text-primary-400 hover:underline"
+                          >
+                            編輯明細分配
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm('確定要清除所有品項明細嗎？這將會把分帳重設為均分。')) {
+                                setExpenseForm(prev => ({
+                                  ...prev,
+                                  items: [],
+                                  split_type: 'equal',
+                                  splits: members.map(m => ({ member_id: m.id, amount: '' }))
+                                }));
+                              }
+                            }}
+                            className="text-xs font-bold text-red-500 hover:text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            清除明細
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-[11px] space-y-1 text-gray-500 dark:text-gray-400 max-h-24 overflow-y-auto font-mono no-scrollbar">
+                        {expenseForm.items.map((item, idx) => {
+                          const assigned = itemAssignments[idx] || item.assigned_member_ids || [];
+                          const names = assigned.map(id => members.find(m => m.id === id)?.name || id).join(', ');
+                          return (
+                            <div key={idx} className="flex justify-between border-b border-gray-50 dark:border-gray-800/40 pb-0.5 last:border-0 last:pb-0">
+                              <span className="truncate max-w-[70%]">{item.name} (x{item.quantity}) → {names || '無'}</span>
+                              <span className="font-semibold">${item.amount.toFixed(2)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setExpenseForm(prev => ({
+                            ...prev,
+                            items: [{ name: '品項 1', amount: parseFloat(prev.amount) || 0, quantity: 1 }]
+                          }));
+                          setItemAssignments({
+                            0: members.map(m => m.id)
+                          });
+                          setShowItemSplittingWizard(true);
+                        }}
+                        className="flex items-center justify-center gap-1.5 w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-500 hover:border-primary-500 dark:hover:text-primary-400 dark:hover:border-primary-400 transition-all bg-gray-50/50 dark:bg-gray-800/20"
+                      >
+                        <Plus size={14} />
+                        <span>細項拆帳：依發票明細分帳與指派成員</span>
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-1">
                     <label className="text-xs font-bold text-gray-500">分帳方式 (Split Options)</label>
                     <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5 text-xs">
@@ -924,6 +1075,305 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Item Splitting Wizard Modal */}
+      {showItemSplittingWizard && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[60] p-4">
+          <div className="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary-500 to-indigo-600 px-6 py-4 text-white flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <span>🍽️ 發票明細分帳 (Item Split)</span>
+                </h3>
+                <p className="text-xs text-primary-100 mt-0.5">請指派發票中的各項商品給對應的成員</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowItemSplittingWizard(false)}
+                className="text-white/80 hover:text-white transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              {/* Receipt Summary */}
+              <div className="bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl flex justify-between items-center text-sm border border-gray-100 dark:border-gray-700">
+                <div>
+                  <div className="font-semibold text-gray-900 dark:text-white">{expenseForm.description || "收據"}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{expenseForm.date}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-primary-600 dark:text-primary-400 font-mono">
+                    {expenseForm.currency} ${parseFloat(expenseForm.amount || '0').toFixed(2)}
+                  </div>
+                  <div className="text-[10px] text-gray-400">總金額</div>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="space-y-4">
+                <h4 className="font-bold text-sm text-gray-900 dark:text-white flex justify-between items-center">
+                  <span>品項明細列表</span>
+                  <span className="text-xs font-normal text-gray-400">點擊成員頭像以指派</span>
+                </h4>
+                
+                {expenseForm.items.length === 0 ? (
+                  <div className="text-center py-8 bg-gray-50/50 dark:bg-gray-800/30 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                    <span className="text-3xl">🧾</span>
+                    <p className="text-sm font-medium text-gray-500 mt-2">尚無品項明細，請點擊下方按鈕新增</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {expenseForm.items.map((item, itemIdx) => {
+                      const assignedIds = itemAssignments[itemIdx] || [];
+                      
+                      return (
+                        <div key={itemIdx} className="bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3 hover:shadow-sm transition-all">
+                          <div className="flex justify-between items-center gap-3">
+                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={item.name}
+                                onChange={(e) => {
+                                  const nextItems = [...expenseForm.items];
+                                  nextItems[itemIdx] = { ...nextItems[itemIdx], name: e.target.value };
+                                  setExpenseForm(prev => ({ ...prev, items: nextItems }));
+                                }}
+                                placeholder="品項名稱"
+                                className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                              />
+                            </div>
+                            
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Quantity */}
+                              <div className="flex items-center space-x-1">
+                                <span className="text-xs text-gray-405">數量:</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity || 1}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value) || 1;
+                                    const nextItems = [...expenseForm.items];
+                                    nextItems[itemIdx] = { ...nextItems[itemIdx], quantity: val };
+                                    setExpenseForm(prev => ({ ...prev, items: nextItems }));
+                                  }}
+                                  className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-center text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-12"
+                                />
+                              </div>
+
+                              {/* Amount */}
+                              <div className="flex items-center space-x-1">
+                                <span className="text-sm font-bold text-gray-500">$</span>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  value={item.amount || ''}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value) || 0;
+                                    const nextItems = [...expenseForm.items];
+                                    nextItems[itemIdx] = { ...nextItems[itemIdx], amount: val };
+                                    setExpenseForm(prev => ({ ...prev, items: nextItems }));
+                                  }}
+                                  className="bg-gray-550 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-24 font-mono"
+                                />
+                              </div>
+
+                              {/* Delete */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const nextItems = expenseForm.items.filter((_, idx) => idx !== itemIdx);
+                                  const nextAssignments = { ...itemAssignments };
+                                  delete nextAssignments[itemIdx];
+                                  const cleanAssignments: Record<number, string[]> = {};
+                                  nextItems.forEach((_, idx) => {
+                                    const oldIdx = idx >= itemIdx ? idx + 1 : idx;
+                                    cleanAssignments[idx] = nextAssignments[oldIdx] || [];
+                                  });
+                                  setItemAssignments(cleanAssignments);
+                                  setExpenseForm(prev => ({ ...prev, items: nextItems }));
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                title="刪除品項"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Members Assignment Row */}
+                          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-gray-50 dark:border-gray-800/40">
+                            {members.map(m => {
+                              const isAssigned = assignedIds.includes(m.id);
+                              const shareAmount = isAssigned ? item.amount / assignedIds.length : 0;
+                              
+                              return (
+                                <button
+                                  key={m.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setItemAssignments(prev => {
+                                      const curr = prev[itemIdx] || [];
+                                      const next = curr.includes(m.id)
+                                        ? curr.filter(id => id !== m.id)
+                                        : [...curr, m.id];
+                                      return { ...prev, [itemIdx]: next };
+                                    });
+                                  }}
+                                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
+                                    isAssigned
+                                      ? 'bg-primary-50 dark:bg-primary-950/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20'
+                                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750'
+                                  }`}
+                                >
+                                  <div className={`w-2 h-2 rounded-full ${isAssigned ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-650'}`} />
+                                  <span>{m.name}</span>
+                                  {isAssigned && (
+                                    <span className="text-[10px] text-primary-500/80 font-mono">
+                                      (${shareAmount.toFixed(2)})
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+
+                            {/* Quick Toggle All/None */}
+                            <div className="ml-auto flex gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setItemAssignments(prev => ({
+                                    ...prev,
+                                    [itemIdx]: members.map(m => m.id)
+                                  }));
+                                }}
+                                className="text-[10px] text-gray-400 hover:text-primary-500 font-semibold px-1"
+                              >
+                                全選
+                              </button>
+                              <span className="text-gray-300 font-normal">|</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setItemAssignments(prev => ({
+                                    ...prev,
+                                    [itemIdx]: []
+                                  }));
+                                }}
+                                className="text-[10px] text-gray-400 hover:text-red-500 font-semibold px-1"
+                              >
+                                清空
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add Item Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextItems = [...expenseForm.items, { name: `品項 ${expenseForm.items.length + 1}`, amount: 0, quantity: 1 }];
+                    const nextIdx = nextItems.length - 1;
+                    setItemAssignments(prev => ({
+                      ...prev,
+                      [nextIdx]: members.map(m => m.id)
+                    }));
+                    setExpenseForm(prev => ({ ...prev, items: nextItems }));
+                  }}
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-500 hover:border-primary-500 dark:hover:text-primary-400 dark:hover:border-primary-400 transition-all bg-gray-50/50 dark:bg-gray-800/20"
+                >
+                  <Plus size={14} />
+                  <span>新增品項 (Add Item)</span>
+                </button>
+
+                {/* Amount Sync Warning */}
+                {(() => {
+                  const itemsSum = expenseForm.items.reduce((acc, item) => acc + (item.amount || 0), 0);
+                  const mainAmount = parseFloat(expenseForm.amount || '0');
+                  const hasMismatch = Math.abs(itemsSum - mainAmount) > 0.01;
+                  
+                  if (!hasMismatch || expenseForm.items.length === 0) return null;
+                  
+                  return (
+                    <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-sm">
+                      <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-medium">
+                        <span>⚠️ 明細總和 ($${itemsSum.toFixed(2)}) 與開支金額 ($${mainAmount.toFixed(2)}) 不符。</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setExpenseForm(prev => ({ ...prev, amount: itemsSum.toFixed(2) }));
+                          toast.success(`開支總金額已同步為 $${itemsSum.toFixed(2)}`);
+                        }}
+                        className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold transition-colors shadow-sm shrink-0"
+                      >
+                        將總金額設為 $${itemsSum.toFixed(2)}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Summary Live Calculation preview */}
+              <div className="bg-primary-50/50 dark:bg-primary-950/10 border border-primary-100 dark:border-primary-900/30 p-5 rounded-2xl space-y-3">
+                <h5 className="font-bold text-xs text-primary-700 dark:text-primary-300 tracking-wider uppercase">個人分帳金額預覽</h5>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  {members.map(m => {
+                    let totalOwed = 0;
+                    expenseForm.items.forEach((item, itemIdx) => {
+                      const assigned = itemAssignments[itemIdx] || [];
+                      if (assigned.includes(m.id)) {
+                        totalOwed += item.amount / assigned.length;
+                      }
+                    });
+                    
+                    return (
+                      <div key={m.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
+                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{m.name}</span>
+                        <span className="text-base font-bold text-gray-950 dark:text-white font-mono mt-1">
+                          ${totalOwed.toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-gray-50 dark:bg-gray-800/80 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <span className="text-xs text-gray-400 font-medium">
+                註：明細加總須等於發票總金額
+              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowItemSplittingWizard(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  取消
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyItemSplit}
+                  className="px-6 py-2 bg-gradient-to-r from-primary-500 to-indigo-600 hover:shadow-lg text-white font-bold rounded-lg text-sm transition-all"
+                >
+                  套用分帳
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

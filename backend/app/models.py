@@ -138,6 +138,14 @@ class ExpenseSplit(BaseModel):
     amount: float = Field(..., ge=0, description="Owed amount in expense currency")
 
 
+class ExpenseItem(BaseModel):
+    """An individual line item within an expense receipt."""
+    name: str = Field(..., min_length=1, max_length=200, description="Item name")
+    amount: float = Field(..., ge=0, description="Total cost of this line item")
+    quantity: Optional[int] = Field(default=1, description="Quantity purchased")
+    assigned_member_ids: List[str] = Field(default_factory=list, description="List of member IDs assigned to this item")
+
+
 class SettleUpExpense(BaseModel):
     """An expense or settlement transaction for bill splitting."""
     id: Optional[str] = Field(default=None, description="Unique identifier")
@@ -152,6 +160,7 @@ class SettleUpExpense(BaseModel):
     payee_id: Optional[str] = Field(default=None, description="Member ID who received the money (for settlements)")
     category: str = Field(default="other", description="Expense category")
     receipt_url: Optional[str] = Field(default=None, description="Receipt image URL")
+    items: Optional[List[ExpenseItem]] = Field(default_factory=list, description="Detailed line items of this expense")
 
 
 class TripUpdate(BaseModel):

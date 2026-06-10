@@ -94,6 +94,13 @@ export interface ExpenseSplit {
   amount: number;
 }
 
+export interface ExpenseItem {
+  name: string;
+  amount: number;
+  quantity?: number;
+  assigned_member_ids?: string[];
+}
+
 export interface SettleUpExpense {
   id?: string;
   description: string;
@@ -107,6 +114,7 @@ export interface SettleUpExpense {
   payee_id?: string;
   category: string;
   receipt_url?: string;
+  items?: ExpenseItem[];
 }
 
 export interface SimplifiedSettlement {

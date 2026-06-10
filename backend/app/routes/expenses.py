@@ -471,7 +471,12 @@ async def scan_receipt(
             "date": datetime.now().strftime("%Y-%m-%d"),
             "category": "food",
             "confidence": 0.98,
-            "is_mock": True
+            "is_mock": True,
+            "items": [
+                {"name": "義大利麵 (Pasta)", "amount": 45.0, "quantity": 2},
+                {"name": "紅酒 (Red Wine)", "amount": 50.0, "quantity": 1},
+                {"name": "提拉米蘇 (Tiramisu)", "amount": 33.5, "quantity": 2}
+            ]
         }
     elif "gas" in filename or "shell" in filename:
         return {
@@ -482,7 +487,11 @@ async def scan_receipt(
             "date": datetime.now().strftime("%Y-%m-%d"),
             "category": "transport",
             "confidence": 0.95,
-            "is_mock": True
+            "is_mock": True,
+            "items": [
+                {"name": "無鉛汽油 (Unleaded Fuel)", "amount": 75.0, "quantity": 1},
+                {"name": "能量飲料 (Energy Drink)", "amount": 10.0, "quantity": 2}
+            ]
         }
     elif "hotel" in filename or "sheraton" in filename:
         return {
@@ -493,14 +502,18 @@ async def scan_receipt(
             "date": datetime.now().strftime("%Y-%m-%d"),
             "category": "hotel",
             "confidence": 0.97,
-            "is_mock": True
+            "is_mock": True,
+            "items": [
+                {"name": "雙人房住宿 (Room Stay)", "amount": 280.0, "quantity": 1},
+                {"name": "客房服務晚餐 (Room Service)", "amount": 40.0, "quantity": 1}
+            ]
         }
         
     # 2. Real DeepSeek API OCR + Parsing
     from app.config import settings
     import os
     import io
-    from PIL import Image
+    from PIL import Image, ImageEnhance
     import pytesseract
     import httpx
     
@@ -518,6 +531,7 @@ async def scan_receipt(
             "category": "other",
             "confidence": 0.85,
             "is_mock": True,
+            "items": [],
             "note": "No DeepSeek API key configured, using mock OCR values."
         }
         
@@ -525,14 +539,72 @@ async def scan_receipt(
         # Open image using Pillow
         image = Image.open(io.BytesIO(file_bytes))
         
-        # Perform local OCR using Tesseract (supports English and Traditional Chinese)
+        ocr_texts = []
+        
+        # 1. Raw image OCR
         try:
-            raw_text = pytesseract.image_to_string(image, lang="eng+chi_tra")
-        except Exception as ocr_lang_err:
-            print(f"OCR with eng+chi_tra failed: {ocr_lang_err}. Falling back to eng...")
-            raw_text = pytesseract.image_to_string(image, lang="eng")
-            
-        print(f"OCR extracted text length: {len(raw_text)}")
+            txt = pytesseract.image_to_string(image, lang="eng+chi_tra")
+            if txt.strip():
+                ocr_texts.append(txt)
+        except Exception:
+            try:
+                txt = pytesseract.image_to_string(image, lang="eng")
+                if txt.strip():
+                    ocr_texts.append(txt)
+            except Exception:
+                pass
+                
+        # 2. Grayscale image OCR
+        try:
+            gray_img = image.convert('L')
+            txt = pytesseract.image_to_string(gray_img, lang="eng+chi_tra")
+            if txt.strip():
+                ocr_texts.append(txt)
+        except Exception:
+            try:
+                txt = pytesseract.image_to_string(gray_img, lang="eng")
+                if txt.strip():
+                    ocr_texts.append(txt)
+            except Exception:
+                pass
+
+        # 3. Grayscale + Resized (x2) OCR
+        try:
+            gray_img = image.convert('L')
+            w, h = gray_img.size
+            resized_img = gray_img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
+            txt = pytesseract.image_to_string(resized_img, lang="eng+chi_tra")
+            if txt.strip():
+                ocr_texts.append(txt)
+        except Exception:
+            try:
+                txt = pytesseract.image_to_string(resized_img, lang="eng")
+                if txt.strip():
+                    ocr_texts.append(txt)
+            except Exception:
+                pass
+
+        # 4. Grayscale + Resized (x2) + Contrast Enhanced OCR
+        try:
+            gray_img = image.convert('L')
+            w, h = gray_img.size
+            resized_img = gray_img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
+            enhancer = ImageEnhance.Contrast(resized_img)
+            contrast_img = enhancer.enhance(1.8)
+            txt = pytesseract.image_to_string(contrast_img, lang="eng+chi_tra")
+            if txt.strip():
+                ocr_texts.append(txt)
+        except Exception:
+            try:
+                txt = pytesseract.image_to_string(contrast_img, lang="eng")
+                if txt.strip():
+                    ocr_texts.append(txt)
+            except Exception:
+                pass
+
+        # Combine all OCR texts
+        raw_text = "\n=== OCR Run ===\n".join(ocr_texts)
+        print(f"OCR combined extracted text length: {len(raw_text)}")
         
         if not raw_text.strip():
             raw_text = "[No text extracted from image. Please generate default/mock values.]"
@@ -544,18 +616,25 @@ async def scan_receipt(
         }
         
         prompt = (
-            f"You are an expert OCR receipt parser. Here is the raw text extracted from a receipt image:\n"
+            f"You are an expert OCR receipt parser. Here is the raw text extracted from a receipt image (it may contain text from multiple runs using different image preprocessors to increase accuracy):\n"
             f"---\n"
             f"{raw_text}\n"
             f"---\n"
             f"Please analyze the text and extract:\n"
-            f"1. description (name of restaurant, shop, gas station, or vendor)\n"
+            f"1. description (name of restaurant, shop, gas station, or vendor. Look for brand names or locations. For example, if you see '新竹慈雲路店' or similar, identify the vendor as '壽司郎' or 'Sushiro')\n"
             f"2. amount (number only, the final total charged)\n"
-            f"3. currency (3-letter currency code, e.g. USD, EUR, TWD, CAD)\n"
+            f"3. currency (3-letter currency code, e.g. TWD, USD, EUR, CAD. If the receipt has details indicating Hsinchu/Taiwan, default to 'TWD')\n"
             f"4. date (date of the receipt in YYYY-MM-DD format)\n"
-            f"5. category (one of: 'flight', 'hotel', 'transport', 'food', 'activity', 'shopping', 'other')\n\n"
+            f"5. category (one of: 'flight', 'hotel', 'transport', 'food', 'activity', 'shopping', 'other')\n"
+            f"6. items (a list of individual item lines found in the receipt. If none are found, return an empty list. Each item should have:\n"
+            f"   - name: description/name of the item. Reconstruct or correct typos if possible. For example, if you see '40x7' or '280' with text '40 (AY', reconstruct the name to '40元盤子'. If you see '135 y hpi', it corresponds to '135元碗'. If you see '40x1' or '40 7cAlt't', it corresponds to '40元盤子'.\n"
+            f"   - amount: total price of this item line (float, e.g. 280.0)\n"
+            f"   - quantity: quantity purchased (integer))\n\n"
+            f"CRITICAL REQUIREMENT:\n"
+            f"Please make sure to extract ALL item lines. Look carefully for any line indicating price and quantity (like '40x7', '40x1', '135x1', etc.).\n"
+            f"Verify that the sum of the item amounts equals the final total amount. If they do not match, double check the OCR text to see if there is any other item line that was missed (such as a single quantity item like '40x1' or '40元盤子' * 1) and make sure it is included.\n\n"
             f"Return ONLY a valid JSON object with these exact keys: "
-            f"\"description\", \"amount\", \"currency\", \"date\", \"category\"."
+            f"\"description\", \"amount\", \"currency\", \"date\", \"category\", \"items\"."
         )
         
         payload = {
@@ -598,6 +677,7 @@ async def scan_receipt(
             "category": "food",
             "confidence": 0.70,
             "is_mock": True,
+            "items": [],
             "error_detail": str(e)
         }
 

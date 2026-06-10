@@ -20,6 +20,7 @@ export default function TripDetailPage() {
   const { currentTrip, isLoading, error, fetchTrip, selectedDate } = useTripStore();
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showDeletePasswordDialog, setShowDeletePasswordDialog] = useState(false);
   const [showPasswordManagement, setShowPasswordManagement] = useState(false);
   const [activeTab, setActiveTab] = useState<'itinerary' | 'expenses'>('itinerary');
   
@@ -69,15 +70,43 @@ export default function TripDetailPage() {
   };
 
   const handleDeleteTrip = async () => {
-    if (window.confirm('確定要永久刪除此旅程嗎？此動作無法復原。')) {
-      try {
-        await tripApi.delete(tripId!);
+    if (currentTrip?.is_protected) {
+      setShowDeletePasswordDialog(true);
+    } else {
+      if (window.confirm('確定要永久刪除此旅程嗎？此動作無法復原。')) {
+        try {
+          await tripApi.delete(tripId!);
+          toast.success('已成功刪除旅程');
+          navigate('/');
+        } catch (error) {
+          console.error('Failed to delete trip:', error);
+          toast.error('刪除旅程失敗，請稍後再試');
+        }
+      }
+    }
+  };
+
+  const handleVerifyDeletePassword = async (password: string): Promise<boolean> => {
+    if (!tripId) return false;
+    try {
+      const response = await fetch(`/api/trips/${tripId}/password/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.data?.valid) {
+        await tripApi.delete(tripId);
         toast.success('已成功刪除旅程');
         navigate('/');
-      } catch (error) {
-        console.error('Failed to delete trip:', error);
-        toast.error('刪除旅程失敗，請稍後再試');
+        return true;
       }
+      return false;
+    } catch (err) {
+      console.error('Password verification failed:', err);
+      return false;
     }
   };
 
@@ -180,15 +209,13 @@ export default function TripDetailPage() {
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               {/* Delete Trip Button */}
-              {!isReadOnly && (
-                <button
-                  onClick={handleDeleteTrip}
-                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-sm"
-                >
-                  <Trash2 size={16} />
-                  <span className="hidden sm:inline">刪除旅程</span>
-                </button>
-              )}
+              <button
+                onClick={handleDeleteTrip}
+                className="flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-sm"
+              >
+                <Trash2 size={16} />
+                <span className="hidden sm:inline">刪除旅程</span>
+              </button>
 
               {/* Password Management Button */}
               <button
@@ -307,6 +334,15 @@ export default function TripDetailPage() {
         isOpen={showPasswordDialog}
         onClose={() => setShowPasswordDialog(false)}
         onVerify={handleVerifyPassword}
+      />
+
+      <PasswordDialog
+        isOpen={showDeletePasswordDialog}
+        onClose={() => setShowDeletePasswordDialog(false)}
+        onVerify={handleVerifyDeletePassword}
+        title="確認刪除旅程"
+        description="此行程受密碼保護，請輸入密碼以確認刪除旅程"
+        submitLabel="確認刪除"
       />
 
       <PasswordManagementModal
