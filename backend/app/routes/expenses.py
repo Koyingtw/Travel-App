@@ -541,13 +541,11 @@ async def scan_receipt(
         # Open image using Pillow
         image = Image.open(io.BytesIO(file_bytes))
         
-        # Preprocess images
-        img_orig = image
+        # Preprocess images (two highly complementary runs)
         img_gray = image.convert('L')
         
         w, h = img_gray.size
         img_resized = img_gray.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
-        
         enhancer = ImageEnhance.Contrast(img_resized)
         img_contrast = enhancer.enhance(1.8)
         
@@ -566,11 +564,9 @@ async def scan_receipt(
                     pass
             return ""
             
-        # Run OCR tasks in parallel using asyncio.to_thread
+        # Run 2 key OCR tasks concurrently in the thread pool for maximum speed and accuracy
         tasks = [
-            asyncio.to_thread(run_ocr, img_orig, "eng+chi_tra"),
             asyncio.to_thread(run_ocr, img_gray, "eng+chi_tra"),
-            asyncio.to_thread(run_ocr, img_resized, "eng+chi_tra"),
             asyncio.to_thread(run_ocr, img_contrast, "eng+chi_tra")
         ]
         

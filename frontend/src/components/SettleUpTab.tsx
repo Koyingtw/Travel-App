@@ -1134,7 +1134,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                       const assignedIds = itemAssignments[itemIdx] || [];
                       
                       return (
-                        <div key={itemIdx} className="bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3 hover:shadow-sm transition-all">
+                        <div key={itemIdx} className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 hover:shadow-sm transition-all">
                           <div className="flex justify-between items-center gap-3">
                             <div className="flex-1 min-w-0 flex items-center gap-2">
                               <input
@@ -1146,14 +1146,14 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                   setExpenseForm(prev => ({ ...prev, items: nextItems }));
                                 }}
                                 placeholder="品項名稱"
-                                className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 text-sm font-bold text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
                               />
                             </div>
                             
                             <div className="flex items-center gap-2 shrink-0">
                               {/* Quantity */}
                               <div className="flex items-center space-x-1">
-                                <span className="text-xs text-gray-405">數量:</span>
+                                <span className="text-xs text-gray-400 dark:text-gray-500">數量:</span>
                                 <input
                                   type="number"
                                   min="1"
@@ -1182,7 +1182,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                     nextItems[itemIdx] = { ...nextItems[itemIdx], amount: val };
                                     setExpenseForm(prev => ({ ...prev, items: nextItems }));
                                   }}
-                                  className="bg-gray-550 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-24 font-mono"
+                                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-24 font-mono"
                                 />
                               </div>
 
@@ -1231,10 +1231,10 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                                     isAssigned
                                       ? 'bg-primary-50 dark:bg-primary-950/30 border-primary-200 dark:border-primary-800 text-primary-700 dark:text-primary-300 ring-2 ring-primary-500/20'
-                                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750'
+                                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                   }`}
                                 >
-                                  <div className={`w-2 h-2 rounded-full ${isAssigned ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-650'}`} />
+                                  <div className={`w-2 h-2 rounded-full ${isAssigned ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                                   <span>{m.name}</span>
                                   {isAssigned && (
                                     <span className="text-[10px] text-primary-500/80 font-mono">
