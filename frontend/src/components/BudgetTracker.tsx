@@ -22,7 +22,7 @@ export default function BudgetTracker() {
     item: '',
     cost: '',
     category: 'other',
-    currency: 'CAD',
+    currency: 'USD',
   });
 
   // Get current day's budget items
@@ -62,7 +62,7 @@ export default function BudgetTracker() {
     try {
       await tripApi.addBudgetItem(currentTrip._id, selectedDate, budgetItem);
       await fetchTrip(currentTrip._id);
-      setNewItem({ item: '', cost: '', category: 'other', currency: 'CAD' });
+      setNewItem({ item: '', cost: '', category: 'other', currency: 'USD' });
       setIsAdding(false);
       toast.success('已新增預算項目');
     } catch (error) {
@@ -82,19 +82,19 @@ export default function BudgetTracker() {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <DollarSign size={18} className="text-maple-500" />
+          <DollarSign size={18} className="text-primary-500" />
           <h3 className="font-semibold text-gray-900">預算追蹤</h3>
         </div>
         <button
           onClick={() => setIsAdding(true)}
-          className="p-2 bg-maple-500 text-white rounded-lg hover:bg-maple-600 transition-colors"
+          className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
         >
           <Plus size={16} />
         </button>
       </div>
 
       {/* Summary */}
-      <div className="p-4 bg-gradient-to-r from-maple-50 to-forest-50 border-b border-gray-100">
+      <div className="p-4 bg-gradient-to-r from-primary-50 to-forest-50 border-b border-gray-100">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-xs text-gray-500 mb-1">總預算</p>
@@ -125,7 +125,7 @@ export default function BudgetTracker() {
             value={newItem.item}
             onChange={(e) => setNewItem({ ...newItem, item: e.target.value })}
             placeholder="項目名稱"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
           />
           <div className="grid grid-cols-2 gap-3">
             <input
@@ -133,22 +133,24 @@ export default function BudgetTracker() {
               value={newItem.cost}
               onChange={(e) => setNewItem({ ...newItem, cost: e.target.value })}
               placeholder="金額"
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             />
             <select
               value={newItem.currency}
               onChange={(e) => setNewItem({ ...newItem, currency: e.target.value })}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             >
-              <option value="CAD">CAD</option>
               <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
               <option value="TWD">TWD</option>
+              <option value="JPY">JPY</option>
+              <option value="CAD">CAD</option>
             </select>
           </div>
           <select
             value={newItem.category}
             onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
           >
             {budgetCategories.map(({ value, label, emoji }) => (
               <option key={value} value={value}>
@@ -159,7 +161,7 @@ export default function BudgetTracker() {
           <div className="flex space-x-2">
             <button
               onClick={handleAddItem}
-              className="flex-1 py-2 bg-maple-500 text-white rounded-lg hover:bg-maple-600"
+              className="flex-1 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
             >
               新增
             </button>

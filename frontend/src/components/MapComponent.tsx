@@ -36,10 +36,10 @@ const mapContainerStyle = {
   height: '100%',
 };
 
-// Default center: Canada (Toronto)
+// Default center: Tokyo
 const defaultCenter = {
-  lat: 43.6532,
-  lng: -79.3832,
+  lat: 35.6762,
+  lng: 139.6503,
 };
 
 // Custom map styles for a clean look
@@ -195,7 +195,7 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-50 rounded-xl">
-        <Loader2 className="animate-spin text-maple-500" size={32} />
+        <Loader2 className="animate-spin text-primary-500" size={32} />
       </div>
     );
   }
@@ -203,8 +203,8 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
   // Fallback UI when no API key
   if (!resolvedApiKey) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-forest-50 to-maple-50 rounded-xl p-6">
-        <MapPin size={64} className="text-maple-400 mb-4" />
+      <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-forest-50 to-primary-50 rounded-xl p-6">
+        <MapPin size={64} className="text-primary-400 mb-4" />
         <h3 className="text-lg font-semibold text-gray-700 mb-2">地圖預覽</h3>
         <p className="text-sm text-gray-500 text-center mb-4">
           設定 Google Maps API Key 以啟用地圖功能
@@ -221,7 +221,7 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
                 return (
                   <div key={marker.id} className="flex items-center space-x-3">
                     {hasOrder && (
-                      <span className="flex-shrink-0 w-6 h-6 bg-maple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
                         {marker.order}
                       </span>
                     )}
@@ -245,7 +245,7 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
             onClick={() => setShowAllPlaces(false)}
             className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
               !showAllPlaces
-                ? 'bg-maple-500 text-white'
+                ? 'bg-primary-500 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -255,7 +255,7 @@ export default function MapComponent({ apiKey }: MapComponentProps) {
             onClick={() => setShowAllPlaces(true)}
             className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
               showAllPlaces
-                ? 'bg-maple-500 text-white'
+                ? 'bg-primary-500 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >

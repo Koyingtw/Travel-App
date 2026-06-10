@@ -91,8 +91,8 @@ export default function PlaceAutocomplete({
       {
         input,
         sessionToken: sessionToken.current!,
-        // Optionally bias towards Canada
-        componentRestrictions: undefined, // Remove to search globally, or set { country: 'ca' } for Canada only
+        // Optionally restrict search results by country
+        componentRestrictions: undefined,
       },
       (predictions, status) => {
         setIsLoading(false);
@@ -186,7 +186,7 @@ export default function PlaceAutocomplete({
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
           placeholder={placeholder}
           disabled={disabled || !isGoogleLoaded}
-          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500 disabled:bg-gray-50 disabled:text-gray-500"
+          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-50 disabled:text-gray-500"
         />
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={18} />
@@ -207,7 +207,7 @@ export default function PlaceAutocomplete({
               className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
             >
               <div className="flex items-start space-x-3">
-                <MapPin className="text-maple-500 mt-0.5 flex-shrink-0" size={16} />
+                <MapPin className="text-primary-500 mt-0.5 flex-shrink-0" size={16} />
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-gray-900 truncate">
                     {prediction.structured_formatting.main_text}

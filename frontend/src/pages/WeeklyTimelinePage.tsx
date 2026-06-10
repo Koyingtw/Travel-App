@@ -8,7 +8,7 @@ export default function WeeklyTimelinePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
-        <Loader2 className="animate-spin text-maple-500 dark:text-maple-400" size={48} />
+        <Loader2 className="animate-spin text-primary-500 dark:text-primary-400" size={48} />
       </div>
     );
   }

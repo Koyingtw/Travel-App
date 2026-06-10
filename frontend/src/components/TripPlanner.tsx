@@ -203,7 +203,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
   if (!currentTrip) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="animate-spin text-maple-500" size={32} />
+        <Loader2 className="animate-spin text-primary-500" size={32} />
       </div>
     );
   }
@@ -216,7 +216,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
         {/* Backlog Panel */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-semibold text-gray-900 dark:text-gray-100">
                   候選景點
@@ -237,7 +237,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   </button>
                   <button
                     onClick={() => !isReadOnly && currentTrip && setIsAddModalOpen(true)}
-                    className={`p-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg transition-all ${
+                    className={`p-2 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 text-white rounded-lg transition-all ${
                       isReadOnly || !currentTrip ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'
                     }`}
                     title={isReadOnly ? '唯讀模式' : !currentTrip ? '載入中...' : '新增景點'}
@@ -263,7 +263,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   onClick={() => setSortBy('time')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     sortBy === 'time'
-                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-medium'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -273,7 +273,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   onClick={() => setSortBy('name')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     sortBy === 'name'
-                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-medium'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -283,7 +283,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   onClick={() => setSortBy('category')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     sortBy === 'category'
-                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-medium'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -293,7 +293,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   onClick={() => setSortBy('group')}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     sortBy === 'group'
-                      ? 'bg-maple-100 dark:bg-maple-900/50 text-maple-700 dark:text-maple-300 font-medium'
+                      ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 font-medium'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                 >
@@ -372,7 +372,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
         <div className="lg:col-span-3">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
             {/* Date Navigation */}
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+            <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
               <button
                 onClick={() => handleDateChange('prev')}
                 disabled={currentDateIndex <= 0}
@@ -407,7 +407,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                 <select
                   value={scheduleStartHour}
                   onChange={(e) => setScheduleStartHour(Number(e.target.value))}
-                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600"
+                  className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600"
                 >
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((hour) => (
                     <option key={hour} value={hour}>

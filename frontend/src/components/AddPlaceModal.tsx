@@ -182,7 +182,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-xl dark:shadow-gray-900/50 max-w-md w-full max-h-[90vh] overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">新增景點</h2>
             <button
               onClick={handleClose}
@@ -257,7 +257,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                         lat: e.target.value ? parseFloat(e.target.value) : null 
                       })}
                       placeholder="51.4968"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 text-sm"
                     />
                   </div>
                   <div>
@@ -273,7 +273,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                         lng: e.target.value ? parseFloat(e.target.value) : null 
                       })}
                       placeholder="-115.9281"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 text-sm"
                     />
                   </div>
                 </div>
@@ -290,7 +290,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                 <select
                   value={formData.duration}
                   onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 appearance-none"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 appearance-none"
                 >
                   <option value={30}>30 分鐘</option>
                   <option value={60}>1 小時</option>
@@ -320,7 +320,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                     onClick={() => setFormData({ ...formData, category: value })}
                     className={`flex items-center justify-center space-x-1 px-3 py-2 rounded-lg border text-sm transition-colors ${
                       formData.category === value
-                        ? 'border-maple-500 dark:border-maple-600 bg-maple-50 dark:bg-maple-900/30 text-maple-700 dark:text-maple-300'
+                        ? 'border-primary-500 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
                     }`}
                   >
@@ -342,7 +342,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                   <select
                     value={formData.group_id || ''}
                     onChange={(e) => setFormData({ ...formData, group_id: e.target.value || undefined })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 appearance-none"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 appearance-none"
                   >
                     <option value="">（不分配群組）</option>
                     {groups.map((group) => (
@@ -368,7 +368,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                     onClick={() => setFormData({ ...formData, priority: level })}
                     className={`flex-1 py-2 rounded-lg border text-sm transition-colors ${
                       formData.priority === level
-                        ? 'border-maple-500 dark:border-maple-600 bg-maple-50 dark:bg-maple-900/30 text-maple-700 dark:text-maple-300'
+                        ? 'border-primary-500 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
                     }`}
                   >
@@ -388,7 +388,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="任何想記下的事項..."
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 resize-none"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 resize-none"
               />
             </div>
 
@@ -404,7 +404,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
               <button
                 type="submit"
                 disabled={!formData.name.trim()}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-lg hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 text-white rounded-lg hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center space-x-2"
               >
                 <Plus size={18} />
                 <span>新增景點</span>

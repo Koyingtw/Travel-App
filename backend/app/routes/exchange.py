@@ -21,7 +21,7 @@ async def get_supported_currencies():
 
 @router.get("/rates")
 async def get_exchange_rates(
-    base: str = Query("CAD", description="Base currency code")
+    base: str = Query("USD", description="Base currency code")
 ):
     """
     獲取匯率
@@ -44,9 +44,9 @@ async def convert_currency(request: ExchangeRateRequest):
     Convert an amount from one currency to another.
     
     Common use cases:
-    - CAD to TWD (Canadian Dollar to Taiwan Dollar)
-    - USD to CAD
-    - EUR to CAD
+    - USD to EUR (US Dollar to Euro)
+    - USD to TWD
+    - EUR to JPY
     """
     return await exchange_service.convert(
         amount=request.amount,
@@ -58,8 +58,8 @@ async def convert_currency(request: ExchangeRateRequest):
 @router.get("/quick-convert")
 async def quick_convert(
     amount: float = Query(..., gt=0, description="Amount to convert"),
-    from_currency: str = Query("CAD", description="Source currency"),
-    to_currency: str = Query("TWD", description="Target currency")
+    from_currency: str = Query("USD", description="Source currency"),
+    to_currency: str = Query("EUR", description="Target currency")
 ):
     """
     快速換算

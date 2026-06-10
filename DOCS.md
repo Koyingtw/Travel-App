@@ -1,6 +1,6 @@
-# 📚 Maple Planner - 詳細技術文件
+# 📚 Voyage Planner (悠遊行程助手) - 詳細技術文件
 
-本文件提供 Maple Planner 專案的詳細技術說明，包含 API 規格、資料模型、架構設計等。
+本文件提供 Voyage Planner (悠遊行程助手) 專案的詳細技術說明，包含 API 規格、資料模型、架構設計等。
 
 ---
 
@@ -56,26 +56,26 @@
 ```json
 {
   "_id": "ObjectId",
-  "title": "加拿大 14 天之旅",
-  "description": "夢想中的楓葉之旅",
-  "destination": "Canada",
+  "title": "巴黎浪漫 10 天之旅",
+  "description": "漫步塞納河畔，探索艾菲爾鐵塔與羅浮宮",
+  "destination": "France",
   "start_date": "2026-06-01",
-  "end_date": "2026-06-14",
+  "end_date": "2026-06-10",
   "cover_image": "https://...",
-  "tags": ["family", "nature"],
+  "tags": ["couple", "culture"],
   "user_id": null,
   
   "backlog_places": [
     {
       "id": "abc123",
-      "name": "CN Tower",
-      "address": "290 Bremner Blvd, Toronto",
-      "coordinates": { "lat": 43.6426, "lng": -79.3871 },
+      "name": "Eiffel Tower",
+      "address": "Champ de Mars, 5 Avenue Anatole France, 75007 Paris",
+      "coordinates": { "lat": 48.8584, "lng": 2.2945 },
       "duration": 120,
       "category": "landmark",
-      "notes": "建議傍晚去看夕陽",
+      "notes": "建議傍晚登塔看夜景",
       "image_url": null,
-      "rating": 4.5,
+      "rating": 4.8,
       "priority": 5
     }
   ],
@@ -88,21 +88,21 @@
           "id": "item001",
           "time": "09:00",
           "end_time": "11:00",
-          "place_name": "Toronto Pearson Airport",
+          "place_name": "Charles de Gaulle Airport",
           "address": "...",
-          "coordinates": { "lat": 43.6777, "lng": -79.6248 },
+          "coordinates": { "lat": 49.0097, "lng": 2.5479 },
           "duration": 120,
-          "notes": "領取租車",
+          "notes": "辦理入境並搭乘 RER B 線到市區",
           "category": "transportation",
           "completed": false,
           "order": 0
         }
       ],
-      "daily_notes": "抵達日，調整時差",
+      "daily_notes": "抵達日，辦理入住手續並稍作休息",
       "budget_items": [
         {
           "id": "budget001",
-          "item": "機票 - 台北到多倫多",
+          "item": "機票 - 台北到巴黎",
           "cost": 45000,
           "currency": "TWD",
           "category": "flight",
@@ -177,13 +177,13 @@
   "items": [
     {
       "_id": "...",
-      "title": "加拿大 14 天之旅",
-      "destination": "Canada",
+      "title": "巴黎浪漫 10 天之旅",
+      "destination": "France",
       "start_date": "2026-06-01",
-      "end_date": "2026-06-14",
+      "end_date": "2026-06-10",
       "cover_image": null,
       "total_places": 15,
-      "total_days": 14
+      "total_days": 10
     }
   ],
   "total": 5,
@@ -201,13 +201,13 @@
 
 ```json
 {
-  "title": "加拿大 14 天之旅",
-  "description": "夢想中的楓葉之旅",
-  "destination": "Canada",
+  "title": "巴黎浪漫 10 天之旅",
+  "description": "漫步塞納河畔，探索艾菲爾鐵塔與羅浮宮",
+  "destination": "France",
   "start_date": "2026-06-01",
-  "end_date": "2026-06-14",
+  "end_date": "2026-06-10",
   "cover_image": null,
-  "tags": ["family", "nature"]
+  "tags": ["couple", "culture"]
 }
 ```
 
@@ -258,9 +258,9 @@
 ```json
 {
   "points": [
-    { "id": "1", "name": "CN Tower", "lat": 43.6426, "lng": -79.3871 },
-    { "id": "2", "name": "ROM", "lat": 43.6677, "lng": -79.3948 },
-    { "id": "3", "name": "AGO", "lat": 43.6536, "lng": -79.3925 }
+    { "id": "1", "name": "Eiffel Tower", "lat": 48.8584, "lng": 2.2945 },
+    { "id": "2", "name": "Louvre Museum", "lat": 48.8606, "lng": 2.3376 },
+    { "id": "3", "name": "Orsay Museum", "lat": 48.8599, "lng": 2.3265 }
   ],
   "start_point_id": "1",
   "end_point_id": null,
@@ -273,9 +273,9 @@
 ```json
 {
   "ordered_points": [
-    { "id": "1", "name": "CN Tower", "lat": 43.6426, "lng": -79.3871 },
-    { "id": "3", "name": "AGO", "lat": 43.6536, "lng": -79.3925 },
-    { "id": "2", "name": "ROM", "lat": 43.6677, "lng": -79.3948 }
+    { "id": "1", "name": "Eiffel Tower", "lat": 48.8584, "lng": 2.2945 },
+    { "id": "3", "name": "Orsay Museum", "lat": 48.8599, "lng": 2.3265 },
+    { "id": "2", "name": "Louvre Museum", "lat": 48.8606, "lng": 2.3376 }
   ],
   "total_distance_km": 3.45,
   "estimated_duration_minutes": 12,
@@ -293,7 +293,8 @@
 
 ```json
 [
-  { "code": "CAD", "name": "Canadian Dollar", "symbol": "$" },
+  { "code": "USD", "name": "US Dollar", "symbol": "$" },
+  { "code": "EUR", "name": "Euro", "symbol": "€" },
   { "code": "TWD", "name": "Taiwan Dollar", "symbol": "NT$" },
   ...
 ]
@@ -307,17 +308,17 @@
 
 | 參數 | 類型 | 預設值 |
 |------|------|--------|
-| `base` | string | CAD |
+| `base` | string | USD |
 
 **Response**
 
 ```json
 {
-  "base": "CAD",
+  "base": "USD",
   "rates": {
-    "USD": 0.74,
-    "TWD": 23.5,
-    "EUR": 0.68,
+    "EUR": 0.92,
+    "TWD": 32.0,
+    "JPY": 155.0,
     ...
   }
 }
@@ -332,8 +333,8 @@
 ```json
 {
   "amount": 100,
-  "from_currency": "CAD",
-  "to_currency": "TWD"
+  "from_currency": "EUR",
+  "to_currency": "USD"
 }
 ```
 
@@ -342,10 +343,10 @@
 ```json
 {
   "original_amount": 100,
-  "converted_amount": 2350.00,
-  "from_currency": "CAD",
-  "to_currency": "TWD",
-  "exchange_rate": 23.5,
+  "converted_amount": 108.70,
+  "from_currency": "EUR",
+  "to_currency": "USD",
+  "exchange_rate": 1.087,
   "last_updated": "2026-01-06T12:00:00Z"
 }
 ```
@@ -633,6 +634,6 @@ A: 免費 API 有更新延遲，如需即時匯率請使用付費 API（如 Open
 
 📧 有問題？歡迎提交 Issue！
 
-🍁 Happy Travels!
+✈️ Happy Travels!
 
 </div>

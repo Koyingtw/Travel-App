@@ -68,11 +68,11 @@ export default function WeeklyTimeline({ trip, onNavigate }: WeeklyTimelineProps
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-white">完整行程時間表</h2>
-            <p className="text-sm text-maple-100 dark:text-maple-200 mt-1">
+            <p className="text-sm text-primary-100 dark:text-primary-200 mt-1">
               {trip.destination} · {trip.start_date} ~ {trip.end_date}
             </p>
           </div>

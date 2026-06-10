@@ -77,7 +77,7 @@ export default function AddCustomActivityModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：開車前往、搭機、午休、自由活動"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               required
             />
           </div>
@@ -92,7 +92,7 @@ export default function AddCustomActivityModal({
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
             <div>
@@ -103,7 +103,7 @@ export default function AddCustomActivityModal({
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function AddCustomActivityModal({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as PlaceCategory)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="transportation">交通</option>
               <option value="hotel">住宿/休息</option>
@@ -135,7 +135,7 @@ export default function AddCustomActivityModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="補充說明..."
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
             />
           </div>
 
@@ -150,7 +150,7 @@ export default function AddCustomActivityModal({
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-maple-500 text-white rounded-lg hover:bg-maple-600 transition-colors flex items-center justify-center space-x-2"
+              className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center space-x-2"
             >
               <Plus size={18} />
               <span>新增活動</span>

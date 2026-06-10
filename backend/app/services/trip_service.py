@@ -66,6 +66,9 @@ class TripService:
             "backlog_places": backlog_places,
             "itinerary": itinerary,
             "total_budget": 0,
+            "members": [],
+            "expenses": [],
+            "base_currency": trip_data.base_currency or "TWD",
             "user_id": None,  # For future auth implementation
             "created_at": datetime.utcnow(),
             "updated_at": datetime.utcnow()
@@ -171,6 +174,11 @@ class TripService:
                         for budget in day.get("budget_items", []):
                             if not budget.get("id"):
                                 budget["id"] = generate_id()
+                elif key == "expenses":
+                    # Ensure all expenses have IDs
+                    for expense in value:
+                        if not expense.get("id"):
+                            expense["id"] = generate_id()
                 update_doc[key] = value
         
         try:

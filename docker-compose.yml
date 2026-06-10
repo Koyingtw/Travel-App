@@ -4,20 +4,20 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: maple-planner-backend
+    container_name: voyage-planner-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
       # MongoDB Atlas 連線字串 - 請替換為你的 Atlas 連線資訊
       - MONGODB_URL=${MONGODB_URL:?MONGODB_URL is required. Set a valid Atlas URI in project root .env}
-      - DATABASE_NAME=${DATABASE_NAME:-maple_planner}
+      - DATABASE_NAME=${DATABASE_NAME:-voyage_planner}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:?GOOGLE_MAPS_API_KEY is required. Set it in project root .env}
       - EXCHANGE_RATE_API_KEY=${EXCHANGE_RATE_API_KEY:?EXCHANGE_RATE_API_KEY is required. Set it in project root .env}
       - DEBUG=${DEBUG:-false}
     networks:
-      - maple-network
+      - voyage-network
 
   # Frontend
   frontend:
@@ -26,15 +26,15 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:?GOOGLE_MAPS_API_KEY is required. Set it in project root .env}
-    container_name: maple-planner-frontend
+    container_name: voyage-planner-frontend
     restart: unless-stopped
     ports:
       - "3000:80"
     depends_on:
       - backend
     networks:
-      - maple-network
+      - voyage-network
 
 networks:
-  maple-network:
+  voyage-network:
     driver: bridge

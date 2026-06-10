@@ -8,19 +8,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Maple theme colors (Canadian inspired)
-        maple: {
-          50: '#fef7f0',
-          100: '#fdecd8',
-          200: '#fad5b0',
-          300: '#f7b87d',
-          400: '#f39248',
-          500: '#ef7424',
-          600: '#e05a1a',
-          700: '#ba4317',
-          800: '#94361a',
-          900: '#782f18',
-          950: '#41150a',
+        // Voyage theme colors (Indigo inspired)
+        primary: {
+          50: '#f5f3ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#6366f1',
+          600: '#4f46e5',
+          700: '#4338ca',
+          800: '#3730a3',
+          900: '#312e81',
+          950: '#1e1b4b',
         },
         forest: {
           50: '#f0fdf4',

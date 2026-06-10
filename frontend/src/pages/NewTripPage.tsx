@@ -6,18 +6,18 @@ import { format, addDays } from 'date-fns';
 import { tripApi } from '../services/api';
 import toast from 'react-hot-toast';
 
-// Popular Canadian destinations
+// Popular destinations
 const destinations = [
-  { name: '多倫多 Toronto', image: '🏙️' },
-  { name: '溫哥華 Vancouver', image: '🌲' },
-  { name: '班夫 Banff', image: '🏔️' },
-  { name: '蒙特婁 Montreal', image: '🎭' },
-  { name: '魁北克城 Quebec City', image: '🏰' },
-  { name: '尼加拉瀑布 Niagara Falls', image: '💦' },
-  { name: '渥太華 Ottawa', image: '🏛️' },
-  { name: '卡加利 Calgary', image: '🤠' },
-  { name: '維多利亞 Victoria', image: '🌸' },
-  { name: '惠斯勒 Whistler', image: '⛷️' },
+  { name: '東京 Tokyo', image: '🗼' },
+  { name: '巴黎 Paris', image: '🏰' },
+  { name: '紐約 New York', image: '🏙️' },
+  { name: '京都 Kyoto', image: '🌸' },
+  { name: '倫敦 London', image: '🎡' },
+  { name: '羅馬 Rome', image: '🏛️' },
+  { name: '曼谷 Bangkok', image: '🛕' },
+  { name: '雪梨 Sydney', image: '⛵' },
+  { name: '巴塞隆納 Barcelona', image: '🎨' },
+  { name: '首爾 Seoul', image: '⛩️' },
 ];
 
 export default function NewTripPage() {
@@ -27,11 +27,12 @@ export default function NewTripPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    destination: 'Canada',
+    destination: '',
     start_date: format(addDays(today, 30), 'yyyy-MM-dd'),
     end_date: format(addDays(today, 44), 'yyyy-MM-dd'),
     cover_image: '',
     tags: [] as string[],
+    base_currency: 'TWD',
   });
   const [tagInput, setTagInput] = useState('');
   const [enablePassword, setEnablePassword] = useState(false);
@@ -144,7 +145,7 @@ export default function NewTripPage() {
             建立新行程 ✈️
           </h1>
           <p className="text-gray-600">
-            開始規劃您的加拿大冒險之旅
+            開始規劃您的下一趟冒險之旅
           </p>
         </div>
 
@@ -161,8 +162,8 @@ export default function NewTripPage() {
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="例如：加拿大 14 天之旅"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                placeholder="例如：東京 5 天賞櫻之旅"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 required
               />
             </div>
@@ -181,7 +182,7 @@ export default function NewTripPage() {
                   onClick={() => handleDestinationClick(dest.name)}
                   className={`p-3 rounded-lg border text-sm text-center transition-colors ${
                     formData.destination === dest.name
-                      ? 'border-maple-500 bg-maple-50 text-maple-700'
+                      ? 'border-primary-500 bg-primary-50 text-primary-700'
                       : 'border-gray-200 hover:border-gray-300 text-gray-600'
                   }`}
                 >
@@ -195,7 +196,7 @@ export default function NewTripPage() {
               value={formData.destination}
               onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
               placeholder="或輸入其他目的地"
-              className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+              className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
@@ -213,7 +214,7 @@ export default function NewTripPage() {
                     type="date"
                     value={formData.start_date}
                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
                 </div>
@@ -226,12 +227,30 @@ export default function NewTripPage() {
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     required
                   />
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Base Currency Selection */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              預設結算幣別 *
+            </label>
+            <select
+              value={formData.base_currency}
+              onChange={(e) => setFormData({ ...formData, base_currency: e.target.value })}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+            >
+              <option value="TWD">TWD (NT$)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="JPY">JPY (¥)</option>
+              <option value="CAD">CAD ($)</option>
+            </select>
           </div>
 
           {/* Description */}
@@ -246,7 +265,7 @@ export default function NewTripPage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="描述這次旅行的目的或期待..."
                 rows={3}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500 resize-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
               />
             </div>
           </div>
@@ -260,13 +279,13 @@ export default function NewTripPage() {
               {formData.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center space-x-1 px-3 py-1 bg-maple-100 text-maple-700 rounded-full text-sm"
+                  className="inline-flex items-center space-x-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
                 >
                   <span>{tag}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-maple-900"
+                    className="hover:text-primary-900"
                   >
                     ×
                   </button>
@@ -282,7 +301,7 @@ export default function NewTripPage() {
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                   placeholder="輸入標籤後按 Enter"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
               <button
@@ -307,7 +326,7 @@ export default function NewTripPage() {
                 value={formData.cover_image}
                 onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
                 placeholder="https://..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
             {formData.cover_image && (
@@ -341,7 +360,7 @@ export default function NewTripPage() {
                   }
                 }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enablePassword ? 'bg-maple-500' : 'bg-gray-200'
+                  enablePassword ? 'bg-primary-500' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -363,7 +382,7 @@ export default function NewTripPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="輸入密碼（至少 4 個字元）"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     minLength={4}
                   />
                 </div>
@@ -373,7 +392,7 @@ export default function NewTripPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="確認密碼"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
                 {password && confirmPassword && password !== confirmPassword && (
@@ -402,7 +421,7 @@ export default function NewTripPage() {
                   }
                 }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enablePassword ? 'bg-maple-500' : 'bg-gray-200'
+                  enablePassword ? 'bg-primary-500' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -424,7 +443,7 @@ export default function NewTripPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="輸入密碼（至少 4 個字元）"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     minLength={4}
                   />
                 </div>
@@ -434,7 +453,7 @@ export default function NewTripPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="確認密碼"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
                 {password && confirmPassword && password !== confirmPassword && (
@@ -456,7 +475,7 @@ export default function NewTripPage() {
             <button
               type="submit"
               disabled={createMutation.isPending}
-              className="flex-1 px-6 py-3 bg-maple-500 text-white rounded-xl font-medium hover:bg-maple-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+              className="flex-1 px-6 py-3 bg-primary-500 text-white rounded-xl font-medium hover:bg-primary-600 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
             >
               {createMutation.isPending ? (
                 <>

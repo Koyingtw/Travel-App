@@ -29,11 +29,11 @@ body {
 
 /* Drag and drop styles */
 .dragging {
-  @apply opacity-50 shadow-lg ring-2 ring-maple-500;
+  @apply opacity-50 shadow-lg ring-2 ring-primary-500;
 }
 
 .drop-target {
-  @apply bg-maple-50 border-maple-300 border-dashed;
+  @apply bg-primary-50 border-primary-300 border-dashed;
 }
 
 /* Timeline styles */
@@ -48,7 +48,7 @@ body {
 
 .timeline-item::after {
   content: '';
-  @apply absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-maple-500 border-2 border-white;
+  @apply absolute left-1.5 top-1.5 w-4 h-4 rounded-full bg-primary-500 border-2 border-white;
 }
 
 .timeline-item:last-child::before {
@@ -61,8 +61,8 @@ body {
 }
 
 /* Gradient backgrounds */
-.gradient-maple {
-  @apply bg-gradient-to-r from-maple-500 to-maple-600;
+.gradient-primary {
+  @apply bg-gradient-to-r from-primary-500 to-primary-600;
 }
 
 .gradient-forest {

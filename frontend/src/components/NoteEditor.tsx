@@ -46,7 +46,7 @@ export default function NoteEditor() {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <FileText size={18} className="text-maple-500" />
+          <FileText size={18} className="text-primary-500" />
           <h3 className="font-semibold text-gray-900">當日備註</h3>
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -66,7 +66,7 @@ export default function NoteEditor() {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="記錄今日的重要事項、提醒或心得...&#10;&#10;例如：&#10;• 記得帶護照&#10;• 10:00 預約了餐廳&#10;• 天氣預報說可能下雨，帶傘"
-          className="w-full h-48 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-maple-500 focus:border-maple-500"
+          className="w-full h-48 p-3 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
       </div>
     </div>

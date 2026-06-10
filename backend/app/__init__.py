@@ -1,2 +1,2 @@
-# Maple Planner Backend
+# Voyage Planner Backend
 __version__ = "1.0.0"

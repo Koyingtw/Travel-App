@@ -84,6 +84,49 @@ export interface DayItinerary {
 
 // ============ Trip Types ============
 
+export interface Member {
+  id: string;
+  name: string;
+}
+
+export interface ExpenseSplit {
+  member_id: string;
+  amount: number;
+}
+
+export interface SettleUpExpense {
+  id?: string;
+  description: string;
+  amount: number;
+  currency: string;
+  date: string;
+  payer_id: string;
+  split_type: 'equal' | 'exact';
+  splits: ExpenseSplit[];
+  is_settlement: boolean;
+  payee_id?: string;
+  category: string;
+  receipt_url?: string;
+}
+
+export interface SimplifiedSettlement {
+  from_id: string;
+  from_name: string;
+  to_id: string;
+  to_name: string;
+  amount: number;
+  currency: string;
+}
+
+export interface ExpensesDashboard {
+  success: boolean;
+  base_currency: string;
+  members: Member[];
+  expenses: SettleUpExpense[];
+  balances: { member_id: string; balance: number }[];
+  simplified_settlements: SimplifiedSettlement[];
+}
+
 export interface Trip {
   _id: string;
   title: string;
@@ -97,6 +140,9 @@ export interface Trip {
   place_groups: PlaceGroup[]; // Groups for organizing backlog places
   itinerary: DayItinerary[];
   total_budget: number;
+  members: Member[];
+  expenses: SettleUpExpense[];
+  base_currency: string;
   user_id?: string;
   created_at: string;
   updated_at: string;
@@ -123,6 +169,7 @@ export interface TripCreate {
   cover_image?: string;
   tags?: string[];
   backlog_places?: Omit<BacklogPlace, 'id'>[];
+  base_currency?: string;
 }
 
 export interface TripUpdate {
@@ -136,6 +183,9 @@ export interface TripUpdate {
   backlog_places?: BacklogPlace[];
   place_groups?: PlaceGroup[];
   itinerary?: DayItinerary[];
+  members?: Member[];
+  expenses?: SettleUpExpense[];
+  base_currency?: string;
 }
 
 // ============ Route Optimization Types ============

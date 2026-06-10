@@ -1,6 +1,6 @@
 """
-Maple Planner - FastAPI Main Application
-楓葉行程助手後端 API 服務
+Voyage Planner - FastAPI Main Application
+悠遊行程助手後端 API 服務
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.database import connect_to_mongodb, close_mongodb_connection
-from app.routes import trips, route_optimization, exchange
+from app.routes import trips, route_optimization, exchange, expenses
 
 
 @asynccontextmanager
@@ -23,11 +23,11 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="Maple Planner API",
+    title="Voyage Planner API",
     description="""
-    🍁 楓葉行程助手 API
+    ✈️ 悠遊行程助手 API
     
-    旅遊行程規劃後端服務，專為加拿大旅遊設計。
+    旅遊行程規劃後端服務，通用智慧旅程規劃與記帳服務。
     
     ## 功能特色
     
@@ -63,13 +63,14 @@ app.add_middleware(
 app.include_router(trips.router, prefix="/api")
 app.include_router(route_optimization.router, prefix="/api")
 app.include_router(exchange.router, prefix="/api")
+app.include_router(expenses.router, prefix="/api")
 
 
 @app.get("/")
 async def root():
     """API 根路徑 - 健康檢查"""
     return {
-        "name": "Maple Planner API",
+        "name": "Voyage Planner API",
         "version": "1.0.0",
         "status": "running",
         "docs": "/docs"

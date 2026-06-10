@@ -194,13 +194,13 @@ export function ItineraryItemCard({
       ref={setNodeRef}
       style={style}
       className={`bg-white dark:bg-gray-800 rounded-lg border shadow-sm dark:shadow-gray-900/50 overflow-hidden transition-all ${
-        isDragging ? 'opacity-50 ring-2 ring-maple-500 dark:ring-maple-400' : ''
+        isDragging ? 'opacity-50 ring-2 ring-primary-500 dark:ring-primary-400' : ''
       } ${item.completed ? 'border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700'}`}
     >
       <div className="flex">
         {/* Time Column */}
         <div className="flex-shrink-0 w-20 bg-gray-50 dark:bg-gray-900 p-3 border-r border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center">
-          <span className="text-sm font-bold text-maple-600 dark:text-maple-400">{item.time}</span>
+          <span className="text-sm font-bold text-primary-600 dark:text-primary-400">{item.time}</span>
           {item.end_time && (
             <>
               <span className="text-xs text-gray-400 dark:text-gray-500">↓</span>
@@ -299,7 +299,7 @@ export function DropZone({ isOver, children }: DropZoneProps) {
     <div
       className={`min-h-[100px] rounded-lg border-2 border-dashed transition-colors ${
         isOver
-          ? 'border-maple-400 dark:border-maple-500 bg-maple-50 dark:bg-maple-900/20'
+          ? 'border-primary-400 dark:border-primary-500 bg-primary-50 dark:bg-primary-900/20'
           : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900'
       }`}
     >

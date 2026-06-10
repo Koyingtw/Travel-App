@@ -1,10 +1,10 @@
-# 🍁 Maple Planner - 楓葉行程助手
+# ✈️ Voyage Planner - 悠遊行程助手
 
 <div align="center">
 
-![Maple Planner](https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80)
+![Voyage Planner](https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=800&q=80)
 
-**專為加拿大旅遊設計的智慧行程規劃工具**
+**現代化的智慧行程規劃與費用分攤工具**
 
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?logo=react)](https://reactjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -22,7 +22,7 @@
 
 ### 📖 專案簡介
 
-Maple Planner 是一個現代化的旅遊行程規劃應用程式，專注於加拿大旅遊體驗。透過直覺的拖拽介面、智慧路徑優化、預算追蹤等功能，讓您的旅遊規劃更加輕鬆愉快。
+Voyage Planner 是一個現代化的智慧旅遊行程規劃與費用分攤管理工具。透過直覺的拖拽介面、智慧路徑優化、多幣別記帳、分帳與債務簡化 (Settle Up) 等功能，讓您的旅遊規劃與結算更加輕鬆愉快。
 
 ### ✨ 主要功能
 
@@ -138,6 +138,8 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+Docker 部署時，前端地圖金鑰會在建置階段讀取 `GOOGLE_MAPS_API_KEY` 並轉成 `VITE_GOOGLE_MAPS_API_KEY`，所以要確保專案根目錄的 `.env` 在 `docker-compose up` 時已經存在。
+
 服務啟動後：
 - 前端：http://localhost:3000
 - 後端 API：http://localhost:8000
@@ -198,8 +200,8 @@ npm run dev
 
 ```env
 # MongoDB Atlas (雲端資料庫)
-MONGODB_URL=mongodb+srv://your_username:your_password@your-cluster.mongodb.net/maple_planner?retryWrites=true&w=majority
-DATABASE_NAME=maple_planner
+MONGODB_URL=mongodb+srv://your_username:your_password@your-cluster.mongodb.net/voyage_planner?retryWrites=true&w=majority
+DATABASE_NAME=voyage_planner
 
 # Google Maps API (路徑優化用，選填)
 GOOGLE_MAPS_API_KEY=your_key_here
@@ -240,7 +242,7 @@ VITE_GOOGLE_MAPS_API_KEY=your_key_here
 
 ### 🎨 UI/UX 設計
 
-- **楓葉主題**：使用加拿大國旗的楓葉紅為主色調
+- **悠遊主題**：使用精美的暗黑模式與靛藍 (Indigo) 配色，提供極致現代感
 - **響應式設計**：支援桌面和移動設備
 - **拖拽體驗**：使用 dnd-kit 實現流暢的拖放操作
 - **即時回饋**：Toast 通知、Loading 狀態
@@ -281,7 +283,7 @@ MIT License
 
 ### 📖 Overview
 
-Maple Planner is a modern travel itinerary planning application focused on Canada travel experiences. With intuitive drag-and-drop interface, smart route optimization, budget tracking, and more, it makes travel planning easier and more enjoyable.
+Voyage Planner is a modern travel itinerary planning application and smart expense settle-up tool. With intuitive drag-and-drop interface, smart route optimization, multi-currency budgeting, bill OCR scan, and debt simplification, it makes travel planning and expense splitting easier and more enjoyable.
 
 ### ✨ Features
 
@@ -315,6 +317,6 @@ MIT License
 
 <div align="center">
 
-Made with ❤️ for Canadian Travel Adventures 🍁
+Made with ❤️ for Global Travel Adventures ✈️
 
 </div>

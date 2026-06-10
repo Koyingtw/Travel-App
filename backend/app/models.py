@@ -1,5 +1,5 @@
 """
-Pydantic Models for Maple Planner API
+Pydantic Models for Voyage Planner API
 """
 from pydantic import BaseModel, Field, computed_field
 from typing import List, Optional
@@ -88,7 +88,7 @@ class BudgetItem(BaseModel):
     id: Optional[str] = Field(default=None, description="Unique identifier")
     item: str = Field(..., min_length=1, max_length=200, description="Expense description")
     cost: float = Field(..., ge=0, description="Cost amount")
-    currency: str = Field(default="CAD", max_length=3, description="Currency code")
+    currency: str = Field(default="USD", max_length=3, description="Currency code")
     category: str = Field(default="other", description="Expense category")
     paid: bool = Field(default=False, description="Whether the expense is paid")
     payment_method: Optional[str] = Field(default=None, description="Payment method")
@@ -110,17 +110,48 @@ class TripBase(BaseModel):
     """Base trip model."""
     title: str = Field(..., min_length=1, max_length=200, description="Trip title")
     description: Optional[str] = Field(default=None, max_length=2000, description="Trip description")
-    destination: str = Field(default="Canada", description="Main destination")
+    destination: str = Field(default="Travel Destination", description="Main destination")
     start_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="Start date")
     end_date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="End date")
     cover_image: Optional[str] = Field(default=None, description="Cover image URL")
     tags: List[str] = Field(default_factory=list, description="Trip tags")
     password_hash: Optional[str] = Field(default=None, description="Hashed password for edit protection")
+    base_currency: str = Field(default="TWD", description="Base currency for expense calculations")
 
 
 class TripCreate(TripBase):
     """Schema for creating a new trip."""
     backlog_places: List[BacklogPlaceCreate] = Field(default_factory=list)
+
+
+# ============ Bookkeeping / Settle Up Models ============
+
+class Member(BaseModel):
+    """A member of the trip for bill splitting."""
+    id: str = Field(..., description="Unique member identifier")
+    name: str = Field(..., min_length=1, max_length=100, description="Member name")
+
+
+class ExpenseSplit(BaseModel):
+    """How an expense is split with a specific member."""
+    member_id: str = Field(..., description="Member ID")
+    amount: float = Field(..., ge=0, description="Owed amount in expense currency")
+
+
+class SettleUpExpense(BaseModel):
+    """An expense or settlement transaction for bill splitting."""
+    id: Optional[str] = Field(default=None, description="Unique identifier")
+    description: str = Field(..., min_length=1, max_length=200, description="Expense description")
+    amount: float = Field(..., gt=0, description="Total cost amount")
+    currency: str = Field(default="TWD", max_length=3, description="Currency code")
+    date: str = Field(..., pattern=r"^\d{4}-\d{2}-\d{2}$", description="Expense date (YYYY-MM-DD)")
+    payer_id: str = Field(..., description="Member ID who paid")
+    split_type: str = Field(default="equal", description="Split type: equal or exact")
+    splits: List[ExpenseSplit] = Field(default_factory=list, description="How the expense is split among members")
+    is_settlement: bool = Field(default=False, description="Whether this is a debt settlement transaction")
+    payee_id: Optional[str] = Field(default=None, description="Member ID who received the money (for settlements)")
+    category: str = Field(default="other", description="Expense category")
+    receipt_url: Optional[str] = Field(default=None, description="Receipt image URL")
 
 
 class TripUpdate(BaseModel):
@@ -135,6 +166,9 @@ class TripUpdate(BaseModel):
     backlog_places: Optional[List[BacklogPlace]] = None
     place_groups: Optional[List[PlaceGroup]] = None
     itinerary: Optional[List[DayItinerary]] = None
+    members: Optional[List[Member]] = None
+    expenses: Optional[List[SettleUpExpense]] = None
+    base_currency: Optional[str] = None
 
 
 class Trip(TripBase):
@@ -142,9 +176,12 @@ class Trip(TripBase):
     id: str = Field(..., alias="_id", description="Trip ID")
     user_id: Optional[str] = Field(default=None, description="User ID (for future auth)")
     backlog_places: List[BacklogPlace] = Field(default_factory=list)
-    place_groups: List[PlaceGroup] = Field(default_factory=list, description="Groups for organizing places")
+    place_groups: List[PlaceGroup] = Field(default_factory=list, description="Groups for organizing backlog places")
     itinerary: List[DayItinerary] = Field(default_factory=list)
     total_budget: float = Field(default=0, description="Total estimated budget")
+    members: List[Member] = Field(default_factory=list, description="List of members for bill splitting")
+    expenses: List[SettleUpExpense] = Field(default_factory=list, description="List of expenses for the trip")
+    base_currency: str = Field(default="TWD", description="Base currency for expense calculations")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     
@@ -230,8 +267,8 @@ class OptimizedRoute(BaseModel):
 class ExchangeRateRequest(BaseModel):
     """Request for currency conversion."""
     amount: float = Field(..., gt=0, description="Amount to convert")
-    from_currency: str = Field(default="CAD", max_length=3)
-    to_currency: str = Field(default="TWD", max_length=3)
+    from_currency: str = Field(default="USD", max_length=3)
+    to_currency: str = Field(default="EUR", max_length=3)
 
 
 class ExchangeRateResponse(BaseModel):

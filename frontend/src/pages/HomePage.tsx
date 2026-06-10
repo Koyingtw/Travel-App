@@ -29,7 +29,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-br from-maple-500 via-maple-600 to-maple-700 dark:from-maple-700 dark:via-maple-800 dark:to-maple-900 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 dark:from-primary-700 dark:via-primary-800 dark:to-primary-900 text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -40,20 +40,20 @@ export default function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="inline-block animate-bounce mb-4">
-              <span className="text-6xl md:text-7xl">🍁</span>
+              <span className="text-6xl md:text-7xl">✈️</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
-              楓葉行程助手
+              Voyage Planner
             </h1>
-            <p className="text-lg md:text-xl text-maple-100 dark:text-maple-200 mb-10 max-w-3xl mx-auto leading-relaxed">
-              專為加拿大旅遊設計的智慧行程規劃工具<br/>
-              <span className="text-maple-200 dark:text-maple-300">拖拽排程 · 路徑優化 · 預算管理</span>
+            <p className="text-lg md:text-xl text-primary-100 dark:text-primary-200 mb-10 max-w-3xl mx-auto leading-relaxed">
+              您的智慧旅遊行程規劃工具<br/>
+              <span className="text-primary-200 dark:text-primary-300">拖拽排程 · 路徑優化 · 預算與記帳</span>
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/trip/new"
-                className="group flex items-center space-x-2 px-8 py-4 bg-white dark:bg-gray-800 text-maple-600 dark:text-maple-400 rounded-xl font-semibold hover:bg-maple-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
+                className="group flex items-center space-x-2 px-8 py-4 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 rounded-xl font-semibold hover:bg-primary-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:scale-105"
               >
                 <Plus size={22} className="group-hover:rotate-90 transition-transform duration-200" />
                 <span>建立新行程</span>
@@ -86,7 +86,7 @@ export default function HomePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="搜尋行程..."
-              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl shadow-sm focus:ring-2 focus:ring-maple-500 dark:focus:ring-maple-600 focus:border-maple-500 dark:focus:border-maple-600 transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-xl shadow-sm focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-600 focus:border-primary-500 dark:focus:border-primary-600 transition-all"
             />
           </div>
         </div>
@@ -97,7 +97,7 @@ export default function HomePage() {
           
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="animate-spin text-maple-500 dark:text-maple-400" size={48} />
+              <Loader2 className="animate-spin text-primary-500 dark:text-primary-400" size={48} />
             </div>
           ) : error ? (
             <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
@@ -120,11 +120,11 @@ export default function HomePage() {
                 尚無行程
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                開始規劃您的加拿大之旅吧！探索楓葉之國的無限魅力
+                開始規劃您的下一趟旅程吧！探索世界的無限魅力
               </p>
               <Link
                 to="/trip/new"
-                className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-maple-500 to-maple-600 dark:from-maple-600 dark:to-maple-700 text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                className="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 <Plus size={22} />
                 <span>建立第一個行程</span>
@@ -138,8 +138,8 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-12 text-center">主要功能</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="group bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg dark:shadow-gray-900/50 border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-gray-900/70 transition-all duration-200 hover:scale-105">
-              <div className="w-14 h-14 bg-gradient-to-br from-maple-100 to-maple-200 dark:from-maple-900/30 dark:to-maple-800/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Calendar className="text-maple-600 dark:text-maple-400" size={28} />
+              <div className="w-14 h-14 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Calendar className="text-primary-600 dark:text-primary-400" size={28} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-3">
                 拖拽排程

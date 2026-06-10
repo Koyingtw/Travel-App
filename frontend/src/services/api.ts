@@ -14,6 +14,9 @@ import type {
   APIResponse,
   PaginatedResponse,
   TripStatistics,
+  Member,
+  SettleUpExpense,
+  ExpensesDashboard,
 } from '../types';
 
 // API base configuration
@@ -138,7 +141,7 @@ export const exchangeApi = {
     return data;
   },
 
-  getRates: async (baseCurrency = 'CAD') => {
+  getRates: async (baseCurrency = 'USD') => {
     const { data } = await api.get<{ base: string; rates: Record<string, number> }>(
       `/exchange/rates?base=${baseCurrency}`
     );
@@ -154,7 +157,7 @@ export const exchangeApi = {
     return data;
   },
 
-  quickConvert: async (amount: number, fromCurrency = 'CAD', toCurrency = 'TWD') => {
+  quickConvert: async (amount: number, fromCurrency = 'USD', toCurrency = 'TWD') => {
     const params = new URLSearchParams({
       amount: amount.toString(),
       from_currency: fromCurrency,
@@ -166,6 +169,93 @@ export const exchangeApi = {
       rate: number;
     }>(`/exchange/quick-convert?${params}`);
     return data;
+  },
+};
+
+// ============ Expenses & Settle Up API ============
+
+export const expenseApi = {
+  // Get dashboard (expenses, balances, settlements)
+  getDashboard: async (tripId: string) => {
+    const { data } = await api.get<ExpensesDashboard>(`/trips/${tripId}/expenses`);
+    return data;
+  },
+
+  // Add member
+  addMember: async (tripId: string, name: string) => {
+    const { data } = await api.post<APIResponse<{ member: Member }>>(
+      `/trips/${tripId}/expenses/members`,
+      { name }
+    );
+    return data;
+  },
+
+  // Rename member
+  updateMember: async (tripId: string, memberId: string, name: string) => {
+    const { data } = await api.put<APIResponse>(
+      `/trips/${tripId}/expenses/members/${memberId}`,
+      { name }
+    );
+    return data;
+  },
+
+  // Delete member
+  deleteMember: async (tripId: string, memberId: string) => {
+    const { data } = await api.delete<APIResponse>(
+      `/trips/${tripId}/expenses/members/${memberId}`
+    );
+    return data;
+  },
+
+  // Add expense / settlement
+  addExpense: async (tripId: string, expense: SettleUpExpense) => {
+    const { data } = await api.post<APIResponse<{ expense_id: string }>>(
+      `/trips/${tripId}/expenses`,
+      expense
+    );
+    return data;
+  },
+
+  // Update expense
+  updateExpense: async (tripId: string, expenseId: string, expense: SettleUpExpense) => {
+    const { data } = await api.put<APIResponse>(
+      `/trips/${tripId}/expenses/${expenseId}`,
+      expense
+    );
+    return data;
+  },
+
+  // Delete expense
+  deleteExpense: async (tripId: string, expenseId: string) => {
+    const { data } = await api.delete<APIResponse>(
+      `/trips/${tripId}/expenses/${expenseId}`
+    );
+    return data;
+  },
+
+  // OCR Receipt Scan
+  scanReceipt: async (tripId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post<{
+      success: boolean;
+      description: string;
+      amount: number;
+      currency: string;
+      date: string;
+      category: string;
+      is_mock: boolean;
+    }>(`/trips/${tripId}/expenses/scan-receipt`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+
+  // Export Excel Download URL
+  getExportUrl: (tripId: string) => {
+    return `/api/trips/${tripId}/expenses/export`;
   },
 };
 

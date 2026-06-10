@@ -21,10 +21,10 @@ export default function Layout() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
-              <span className="text-3xl">🍁</span>
+              <span className="text-3xl">✈️</span>
               <div>
-                <h1 className="text-xl font-bold text-maple-600 dark:text-maple-400">Maple Planner</h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">楓葉行程助手</p>
+                <h1 className="text-xl font-bold text-primary-600 dark:text-primary-400">Voyage Planner</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">悠遊行程助手</p>
               </div>
             </Link>
 
@@ -37,7 +37,7 @@ export default function Layout() {
                     to={path}
                     className={`flex items-center space-x-1 px-4 py-2 rounded-lg transition-colors ${
                       location.pathname === path
-                        ? 'bg-maple-100 dark:bg-maple-900/30 text-maple-700 dark:text-maple-400'
+                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                         : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -72,7 +72,7 @@ export default function Layout() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center space-x-2 px-4 py-3 transition-colors ${
                   location.pathname === path
-                    ? 'bg-maple-50 dark:bg-maple-900/30 text-maple-700 dark:text-maple-400'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
                     : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
@@ -94,13 +94,13 @@ export default function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2">
-              <span className="text-2xl">🍁</span>
-              <span className="font-semibold">Maple Planner</span>
+              <span className="text-2xl">✈️</span>
+              <span className="font-semibold">Voyage Planner</span>
             </div>
             <div className="flex items-center space-x-6 text-sm">
               <span className="flex items-center space-x-1">
                 <MapPin size={16} />
-                <span>專為加拿大旅遊設計</span>
+                <span>智慧旅遊行程規劃</span>
               </span>
               <span className="flex items-center space-x-1">
                 <Calendar size={16} />
@@ -108,7 +108,7 @@ export default function Layout() {
               </span>
             </div>
             <p className="text-sm text-gray-400">
-              © 2026 Maple Planner. All rights reserved.
+              © 2026 Voyage Planner. All rights reserved.
             </p>
           </div>
         </div>

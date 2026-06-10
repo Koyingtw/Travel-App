@@ -6,8 +6,8 @@ import type { SupportedCurrency } from '../types';
 
 export default function ExchangePage() {
   const [amount, setAmount] = useState('100');
-  const [fromCurrency, setFromCurrency] = useState('CAD');
-  const [toCurrency, setToCurrency] = useState('TWD');
+  const [fromCurrency, setFromCurrency] = useState('USD');
+  const [toCurrency, setToCurrency] = useState('EUR');
 
   const { data: currencies } = useQuery({
     queryKey: ['currencies'],
@@ -41,14 +41,14 @@ export default function ExchangePage() {
   // Quick conversion amounts
   const quickAmounts = [10, 50, 100, 500, 1000];
 
-  // Common currency pairs for Canada travelers
+  // Common currency pairs
   const commonPairs = [
-    { from: 'CAD', to: 'TWD', label: '加幣 → 台幣' },
-    { from: 'CAD', to: 'USD', label: '加幣 → 美元' },
-    { from: 'USD', to: 'CAD', label: '美元 → 加幣' },
-    { from: 'CAD', to: 'JPY', label: '加幣 → 日圓' },
-    { from: 'CAD', to: 'EUR', label: '加幣 → 歐元' },
-    { from: 'CAD', to: 'CNY', label: '加幣 → 人民幣' },
+    { from: 'USD', to: 'TWD', label: '美元 → 台幣' },
+    { from: 'USD', to: 'EUR', label: '美元 → 歐元' },
+    { from: 'EUR', to: 'USD', label: '歐元 → 美元' },
+    { from: 'USD', to: 'JPY', label: '美元 → 日圓' },
+    { from: 'EUR', to: 'JPY', label: '歐元 → 日圓' },
+    { from: 'USD', to: 'CNY', label: '美元 → 人民幣' },
   ];
 
   return (
@@ -67,7 +67,7 @@ export default function ExchangePage() {
         {/* Main Converter */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden mb-6">
           {/* From Currency */}
-          <div className="p-6 bg-gradient-to-r from-maple-50 to-maple-100">
+          <div className="p-6 bg-gradient-to-r from-primary-50 to-primary-100">
             <label className="block text-sm font-medium text-gray-600 mb-2">
               換算金額
             </label>
@@ -82,7 +82,7 @@ export default function ExchangePage() {
               <select
                 value={fromCurrency}
                 onChange={(e) => setFromCurrency(e.target.value)}
-                className="text-lg font-semibold bg-white border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-maple-500"
+                className="text-lg font-semibold bg-white border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary-500"
               >
                 {currencies?.map((c: SupportedCurrency) => (
                   <option key={c.code} value={c.code}>
@@ -100,7 +100,7 @@ export default function ExchangePage() {
                   onClick={() => setAmount(amt.toString())}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                     amount === amt.toString()
-                      ? 'bg-maple-500 text-white'
+                      ? 'bg-primary-500 text-white'
                       : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
@@ -114,7 +114,7 @@ export default function ExchangePage() {
           <div className="relative h-0">
             <button
               onClick={handleSwap}
-              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-maple-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-maple-600 transition-colors"
+              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-primary-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-primary-600 transition-colors"
             >
               <ArrowRightLeft size={20} className="rotate-90" />
             </button>
@@ -160,7 +160,7 @@ export default function ExchangePage() {
             </div>
             <button
               onClick={() => refetchRates()}
-              className="flex items-center space-x-1 text-sm text-maple-600 hover:text-maple-700"
+              className="flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-700"
             >
               <RefreshCw size={14} />
               <span>更新匯率</span>
@@ -181,7 +181,7 @@ export default function ExchangePage() {
                 }}
                 className={`p-3 rounded-lg border text-sm text-left transition-colors ${
                   fromCurrency === pair.from && toCurrency === pair.to
-                    ? 'border-maple-500 bg-maple-50 text-maple-700'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-600'
                 }`}
               >
@@ -195,13 +195,13 @@ export default function ExchangePage() {
         </div>
 
         {/* Tips */}
-        <div className="mt-6 bg-maple-50 rounded-xl p-6 border border-maple-100">
-          <h3 className="font-semibold text-maple-800 mb-3">💡 旅遊小提醒</h3>
-          <ul className="space-y-2 text-sm text-maple-700">
-            <li>• 加拿大主要使用加幣 (CAD)，美金在邊境地區也可使用</li>
-            <li>• 信用卡在加拿大非常普遍，大部分商店都接受</li>
+        <div className="mt-6 bg-primary-50 rounded-xl p-6 border border-primary-100">
+          <h3 className="font-semibold text-primary-800 mb-3">💡 旅遊小提醒</h3>
+          <ul className="space-y-2 text-sm text-primary-700">
+            <li>• 出發前建議準備少量目的地現金，以備不時之需</li>
+            <li>• 信用卡與行動支付已日漸普及，但部分地區小店仍僅收現金</li>
             <li>• 建議在銀行或正規兌換處換匯，避免高額手續費</li>
-            <li>• 小費文化：餐廳通常 15-20%，服務業 10-15%</li>
+            <li>• 注意各國小費文化：部分國家/地區（如美加）餐廳需要給小費，而日本、歐洲多數已含服務費</li>
           </ul>
         </div>
       </div>

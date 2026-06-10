@@ -10,13 +10,13 @@ interface TripCardProps {
   onDelete?: (id: string) => void;
 }
 
-// Default cover images for Canada (optimized: smaller size + WebP)
+// Default cover images (optimized: smaller size + WebP)
 const defaultCovers = [
-  'https://images.unsplash.com/photo-1503614472-8c93d56e92ce?w=400&q=60&fm=webp', // Moraine Lake
-  'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&q=60&fm=webp', // Toronto
-  'https://images.unsplash.com/photo-1519832979-6fa011b87667?w=400&q=60&fm=webp', // Vancouver
-  'https://images.unsplash.com/photo-1551009175-15bdf9dcb580?w=400&q=60&fm=webp', // Banff
-  'https://images.unsplash.com/photo-1508693926297-1d61ee3df82a?w=400&q=60&fm=webp', // Niagara Falls
+  'https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?w=400&q=60&fm=webp', // Tokyo
+  'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&q=60&fm=webp', // Paris
+  'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400&q=60&fm=webp', // Rome
+  'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400&q=60&fm=webp', // New York
+  'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&q=60&fm=webp', // London
 ];
 
 // Use memo to prevent unnecessary re-renders
@@ -84,13 +84,13 @@ const TripCard = memo(function TripCard({ trip, onDelete }: TripCardProps) {
       <div className="p-4 space-y-3">
         {/* Destination */}
         <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
-          <MapPin size={16} className="text-maple-500 dark:text-maple-400" />
+          <MapPin size={16} className="text-primary-500 dark:text-primary-400" />
           <span className="text-sm">{trip.destination}</span>
         </div>
 
         {/* Dates */}
         <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
-          <Calendar size={16} className="text-maple-500 dark:text-maple-400" />
+          <Calendar size={16} className="text-primary-500 dark:text-primary-400" />
           <span className="text-sm">
             {format(startDate, 'yyyy/MM/dd', { locale: zhTW })} - {format(endDate, 'MM/dd', { locale: zhTW })}
           </span>
@@ -101,7 +101,7 @@ const TripCard = memo(function TripCard({ trip, onDelete }: TripCardProps) {
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {trip.total_places || 0} 個景點
           </span>
-          <span className="text-sm text-maple-600 dark:text-maple-400 font-medium group-hover:text-maple-700 dark:group-hover:text-maple-300 transition-colors">
+          <span className="text-sm text-primary-600 dark:text-primary-400 font-medium group-hover:text-primary-700 dark:group-hover:text-primary-300 transition-colors">
             查看詳情 →
           </span>
         </div>

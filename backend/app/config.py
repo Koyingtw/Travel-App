@@ -1,5 +1,5 @@
 """
-Maple Planner Backend - Configuration Settings
+Voyage Planner Backend - Configuration Settings
 """
 from pydantic_settings import BaseSettings
 from typing import List
@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     
     # MongoDB Atlas
     # 格式: mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
-    mongodb_url: str = "mongodb+srv://user:password@cluster.mongodb.net/maple_planner?retryWrites=true&w=majority"
-    database_name: str = "maple_planner"
+    mongodb_url: str = "mongodb+srv://user:password@cluster.mongodb.net/voyage_planner?retryWrites=true&w=majority"
+    database_name: str = "voyage_planner"
     
     # Google Maps API
     google_maps_api_key: str = ""

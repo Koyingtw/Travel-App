@@ -268,7 +268,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                     onClick={() => setImportMethod('file')}
                     className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       importMethod === 'file'
-                        ? 'bg-maple-500 text-white border-maple-500'
+                        ? 'bg-primary-500 text-white border-primary-500'
                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                     }`}
                   >
@@ -279,7 +279,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                     onClick={() => setImportMethod('url')}
                     className={`flex-1 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                       importMethod === 'url'
-                        ? 'bg-maple-500 text-white border-maple-500'
+                        ? 'bg-primary-500 text-white border-primary-500'
                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                     }`}
                   >
@@ -307,13 +307,13 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                   onDrop={handleDrop}
                   className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
                     isDragging
-                      ? 'border-maple-500 bg-maple-50'
+                      ? 'border-primary-500 bg-primary-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
                   {isLoading ? (
                     <div className="flex flex-col items-center">
-                      <Loader2 className="w-12 h-12 text-maple-500 animate-spin" />
+                      <Loader2 className="w-12 h-12 text-primary-500 animate-spin" />
                       <p className="mt-3 text-gray-600">正在解析檔案...</p>
                     </div>
                   ) : (
@@ -323,7 +323,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                         將 JSON 檔案拖放到此處
                       </p>
                       <p className="mt-1 text-sm text-gray-500">或</p>
-                      <label className="mt-3 inline-flex items-center px-4 py-2 bg-maple-500 text-white rounded-lg hover:bg-maple-600 cursor-pointer transition-colors">
+                      <label className="mt-3 inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 cursor-pointer transition-colors">
                         <Upload size={18} className="mr-2" />
                         選擇檔案
                         <input
@@ -377,7 +377,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                           onChange={(e) => setShareUrl(e.target.value)}
                           placeholder="https://maps.app.goo.gl/AvnhrjQyTDioAaJP8"
                           disabled
-                          className="w-full px-4 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maple-500 focus:border-maple-500 disabled:bg-gray-100 disabled:text-gray-500"
+                          className="w-full px-4 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-gray-100 disabled:text-gray-500"
                         />
                         <button
                           type="button"
@@ -441,7 +441,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                   <div className="flex space-x-2">
                     <button
                       onClick={selectAll}
-                      className="text-sm text-maple-600 hover:text-maple-700"
+                      className="text-sm text-primary-600 hover:text-primary-700"
                     >
                       全選
                     </button>
@@ -463,13 +463,13 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                       onClick={() => togglePlace(index)}
                       className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
                         place.selected
-                          ? 'border-maple-300 bg-maple-50'
+                          ? 'border-primary-300 bg-primary-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <div className={`w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         place.selected
-                          ? 'bg-maple-500 border-maple-500'
+                          ? 'bg-primary-500 border-primary-500'
                           : 'border-gray-300'
                       }`}>
                         {place.selected && <Check size={14} className="text-white" />}
@@ -524,7 +524,7 @@ export default function ImportGoogleMapsModal({ isOpen, onClose, onImport }: Imp
                 <button
                   onClick={handleImport}
                   disabled={selectedCount === 0}
-                  className="px-4 py-2 bg-maple-500 text-white rounded-lg hover:bg-maple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
                 >
                   <Upload size={18} className="mr-2" />
                   匯入選取的地點
