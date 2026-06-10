@@ -536,72 +536,47 @@ async def scan_receipt(
         }
         
     try:
+        import asyncio
+        
         # Open image using Pillow
         image = Image.open(io.BytesIO(file_bytes))
         
-        ocr_texts = []
+        # Preprocess images
+        img_orig = image
+        img_gray = image.convert('L')
         
-        # 1. Raw image OCR
-        try:
-            txt = pytesseract.image_to_string(image, lang="eng+chi_tra")
-            if txt.strip():
-                ocr_texts.append(txt)
-        except Exception:
+        w, h = img_gray.size
+        img_resized = img_gray.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
+        
+        enhancer = ImageEnhance.Contrast(img_resized)
+        img_contrast = enhancer.enhance(1.8)
+        
+        # Helper function for OCR running inside thread pool
+        def run_ocr(img, lang="eng+chi_tra"):
             try:
-                txt = pytesseract.image_to_string(image, lang="eng")
+                txt = pytesseract.image_to_string(img, lang=lang)
                 if txt.strip():
-                    ocr_texts.append(txt)
+                    return txt
             except Exception:
-                pass
-                
-        # 2. Grayscale image OCR
-        try:
-            gray_img = image.convert('L')
-            txt = pytesseract.image_to_string(gray_img, lang="eng+chi_tra")
-            if txt.strip():
-                ocr_texts.append(txt)
-        except Exception:
-            try:
-                txt = pytesseract.image_to_string(gray_img, lang="eng")
-                if txt.strip():
-                    ocr_texts.append(txt)
-            except Exception:
-                pass
-
-        # 3. Grayscale + Resized (x2) OCR
-        try:
-            gray_img = image.convert('L')
-            w, h = gray_img.size
-            resized_img = gray_img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
-            txt = pytesseract.image_to_string(resized_img, lang="eng+chi_tra")
-            if txt.strip():
-                ocr_texts.append(txt)
-        except Exception:
-            try:
-                txt = pytesseract.image_to_string(resized_img, lang="eng")
-                if txt.strip():
-                    ocr_texts.append(txt)
-            except Exception:
-                pass
-
-        # 4. Grayscale + Resized (x2) + Contrast Enhanced OCR
-        try:
-            gray_img = image.convert('L')
-            w, h = gray_img.size
-            resized_img = gray_img.resize((w * 2, h * 2), Image.Resampling.LANCZOS)
-            enhancer = ImageEnhance.Contrast(resized_img)
-            contrast_img = enhancer.enhance(1.8)
-            txt = pytesseract.image_to_string(contrast_img, lang="eng+chi_tra")
-            if txt.strip():
-                ocr_texts.append(txt)
-        except Exception:
-            try:
-                txt = pytesseract.image_to_string(contrast_img, lang="eng")
-                if txt.strip():
-                    ocr_texts.append(txt)
-            except Exception:
-                pass
-
+                try:
+                    txt = pytesseract.image_to_string(img, lang="eng")
+                    if txt.strip():
+                        return txt
+                except Exception:
+                    pass
+            return ""
+            
+        # Run OCR tasks in parallel using asyncio.to_thread
+        tasks = [
+            asyncio.to_thread(run_ocr, img_orig, "eng+chi_tra"),
+            asyncio.to_thread(run_ocr, img_gray, "eng+chi_tra"),
+            asyncio.to_thread(run_ocr, img_resized, "eng+chi_tra"),
+            asyncio.to_thread(run_ocr, img_contrast, "eng+chi_tra")
+        ]
+        
+        results = await asyncio.gather(*tasks)
+        ocr_texts = [r for r in results if r]
+        
         # Combine all OCR texts
         raw_text = "\n=== OCR Run ===\n".join(ocr_texts)
         print(f"OCR combined extracted text length: {len(raw_text)}")
