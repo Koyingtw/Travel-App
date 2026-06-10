@@ -7,6 +7,9 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-chi-tra \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for caching

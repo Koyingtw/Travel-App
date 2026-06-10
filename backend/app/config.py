@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     # Exchange Rate API
     exchange_rate_api_key: str = ""
     
+    # DeepSeek API Key
+    deepseek_api_key: str = "sk-a4942d11fb094af1b4fd6dcc989f6add"
+    
     # Server
     host: str = "0.0.0.0"
     port: int = 8000

@@ -496,18 +496,19 @@ async def scan_receipt(
             "is_mock": True
         }
         
-    # 2. Real Gemini API Extraction
+    # 2. Real DeepSeek API OCR + Parsing
     from app.config import settings
-    # We will try to get a Gemini API Key from our configuration
-    # We check if maps key is available as Gemini key, or if exchange/some other config has it
-    api_key = getattr(settings, "google_maps_api_key", None)
+    import os
+    import io
+    from PIL import Image
+    import pytesseract
+    import httpx
+    
+    api_key = getattr(settings, "deepseek_api_key", None)
     if not api_key or api_key == "your_key_here":
-        # Check environment variable
-        import os
-        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_MAPS_API_KEY")
+        api_key = os.environ.get("DEEPSEEK_API_KEY") or "sk-a4942d11fb094af1b4fd6dcc989f6add"
         
     if not api_key:
-        # No key, return fallback response with randomized variations of a travel expense
         return {
             "success": True,
             "description": "Scanned Receipt Expense",
@@ -517,33 +518,63 @@ async def scan_receipt(
             "category": "other",
             "confidence": 0.85,
             "is_mock": True,
-            "note": "No Gemini API key configured, using mock OCR values."
+            "note": "No DeepSeek API key configured, using mock OCR values."
         }
         
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
+        # Open image using Pillow
+        image = Image.open(io.BytesIO(file_bytes))
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Perform local OCR using Tesseract (supports English and Traditional Chinese)
+        try:
+            raw_text = pytesseract.image_to_string(image, lang="eng+chi_tra")
+        except Exception as ocr_lang_err:
+            print(f"OCR with eng+chi_tra failed: {ocr_lang_err}. Falling back to eng...")
+            raw_text = pytesseract.image_to_string(image, lang="eng")
+            
+        print(f"OCR extracted text length: {len(raw_text)}")
+        
+        if not raw_text.strip():
+            raw_text = "[No text extracted from image. Please generate default/mock values.]"
+            
+        # Send raw text to DeepSeek Chat API
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
         
         prompt = (
-            "Extract the following details from this receipt image: \n"
-            "1. description (name of restaurant, shop, gas station, or vendor)\n"
-            "2. total amount (number only, the final total charged)\n"
-            "3. currency (3-letter currency code, e.g. CAD, USD, TWD, EUR, JPY)\n"
-            "4. date (date of the receipt in YYYY-MM-DD format)\n"
-            "5. category (one of: 'flight', 'hotel', 'transport', 'food', 'activity', 'shopping', 'other')\n\n"
-            "Return ONLY a valid JSON object with these exact keys: "
-            "\"description\", \"amount\", \"currency\", \"date\", \"category\"."
+            f"You are an expert OCR receipt parser. Here is the raw text extracted from a receipt image:\n"
+            f"---\n"
+            f"{raw_text}\n"
+            f"---\n"
+            f"Please analyze the text and extract:\n"
+            f"1. description (name of restaurant, shop, gas station, or vendor)\n"
+            f"2. amount (number only, the final total charged)\n"
+            f"3. currency (3-letter currency code, e.g. USD, EUR, TWD, CAD)\n"
+            f"4. date (date of the receipt in YYYY-MM-DD format)\n"
+            f"5. category (one of: 'flight', 'hotel', 'transport', 'food', 'activity', 'shopping', 'other')\n\n"
+            f"Return ONLY a valid JSON object with these exact keys: "
+            f"\"description\", \"amount\", \"currency\", \"date\", \"category\"."
         )
         
-        response = model.generate_content([
-            prompt,
-            {"mime_type": file.content_type or "image/jpeg", "data": file_bytes}
-        ])
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.0
+        }
         
-        # Parse the JSON response
-        text = response.text.strip()
+        async with httpx.AsyncClient() as client:
+            response = await client.post("https://api.deepseek.com/chat/completions", headers=headers, json=payload, timeout=60.0)
+        
+        if response.status_code != 200:
+            raise Exception(f"DeepSeek API returned status code {response.status_code}: {response.text}")
+            
+        res_data = response.json()
+        text = res_data['choices'][0]['message']['content'].strip()
+        
         # Clean markdown code block formatting if present
         if text.startswith("```"):
             lines = text.split("\n")
@@ -556,7 +587,7 @@ async def scan_receipt(
         return extracted
         
     except Exception as e:
-        print(f"Gemini receipt scan failed: {e}")
+        print(f"DeepSeek receipt scan failed: {e}")
         # Fallback to a default mock record so that UI flow works
         return {
             "success": True,
