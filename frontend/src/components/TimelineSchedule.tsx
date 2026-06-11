@@ -38,6 +38,7 @@ export default function TimelineSchedule({
   isReadOnly = false,
 }: TimelineScheduleProps) {
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [activeView, setActiveView] = useState<'timeline' | 'route'>('timeline');
   const [tempPosition, setTempPosition] = useState<{ itemId: string; time: string; endTime: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -218,10 +219,34 @@ export default function TimelineSchedule({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="flex flex-col">
+        {/* 手機版視圖切換標籤 */}
+        <div className="flex border-b border-gray-200 dark:border-gray-700 lg:hidden bg-gray-50 dark:bg-gray-900/50 p-1 gap-1">
+          <button
+            onClick={() => setActiveView('timeline')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
+              activeView === 'timeline'
+                ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50'
+            }`}
+          >
+            📅 行程表
+          </button>
+          <button
+            onClick={() => setActiveView('route')}
+            className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-all duration-200 ${
+              activeView === 'route'
+                ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-white/50 dark:hover:bg-gray-800/50'
+            }`}
+          >
+            📍 路線資訊
+          </button>
+        </div>
+
         {/* 時間軸和路線資訊區域 */}
         <div className="flex flex-col lg:flex-row">
           {/* 時間軸主要區域（時間標籤 + 行程） */}
-          <div className="flex flex-1 min-w-0">
+          <div className={`flex-1 min-w-0 ${activeView === 'timeline' ? 'flex' : 'hidden lg:flex'}`}>
           {/* 時間標籤列 */}
           <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
             <div className="h-10" /> {/* 對齊頂部空白區域 */}
@@ -385,7 +410,7 @@ export default function TimelineSchedule({
           </div>
           
           {/* 右側邊欄 - 路線資訊 */}
-          <div className="w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen">
+          <div className={`w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen ${activeView === 'route' ? 'block' : 'hidden lg:block'}`}>
             <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 <MapPin size={14} />
@@ -498,7 +523,7 @@ export default function TimelineSchedule({
         
         {/* 住宿顯示在底部 - 在整個時間軸和路線資訊下方 */}
         {accommodationItem && (
-          <div className="border-t-2 border-dashed border-gray-300 dark:border-gray-600 p-4">
+          <div className={`border-t-2 border-dashed border-gray-300 dark:border-gray-600 p-4 ${activeView === 'timeline' ? 'block' : 'hidden lg:block'}`}>
             <div 
               className={`bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600 rounded-lg shadow-sm hover:shadow-md transition-shadow ${onEditAccommodation && !isReadOnly ? 'cursor-pointer' : ''}`}
               onClick={() => {
