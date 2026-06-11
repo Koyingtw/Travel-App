@@ -214,7 +214,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
     <>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Backlog Panel */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 order-2 lg:order-1">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
               <div className="flex items-center justify-between mb-3">
@@ -369,7 +369,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
         </div>
 
         {/* Itinerary Panel */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 order-1 lg:order-2">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900/50 border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-200">
             {/* Date Navigation */}
             <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-700">
@@ -474,7 +474,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
             </div>
 
             {/* Timeline Schedule */}
-            <div className="overflow-auto bg-gray-50 dark:bg-gray-900" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+            <div className="overflow-auto bg-gray-50 dark:bg-gray-900 max-h-none lg:max-h-[calc(100vh-260px)]">
               {currentDayItinerary && currentDayItinerary.items.length > 0 ? (
                 <TimelineSchedule
                   items={currentDayItinerary.items}

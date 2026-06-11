@@ -153,9 +153,9 @@ export default function TripDetailPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm sticky top-16 z-40">
-        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Header Info - Non-sticky */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-750 shadow-sm">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-4">
               <Link
@@ -166,7 +166,7 @@ export default function TripDetailPage() {
               </Link>
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-400 dark:to-primary-300 bg-clip-text text-transparent">
+                  <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-505 dark:from-primary-400 dark:to-primary-300 bg-clip-text text-transparent">
                     {currentTrip.title}
                   </h1>
                   
@@ -247,12 +247,17 @@ export default function TripDetailPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Sticky Tab Navigation & Day Selector */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-250 dark:border-gray-700 shadow-sm sticky top-16 z-40">
+        <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           {/* Tab Navigation */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700 mt-6">
+          <div className="flex border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setActiveTab('itinerary')}
-              className={`py-3 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
+              className={`py-2 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
                 activeTab === 'itinerary'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400 dark:border-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -262,7 +267,7 @@ export default function TripDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab('expenses')}
-              className={`py-3 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
+              className={`py-2 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
                 activeTab === 'expenses'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400 dark:border-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -274,7 +279,7 @@ export default function TripDetailPage() {
 
           {/* Day Selector Pills - only show if activeTab is itinerary */}
           {activeTab === 'itinerary' && (
-            <div className="flex items-center space-x-2 overflow-x-auto max-w-full mt-4 no-scrollbar">
+            <div className="flex items-center space-x-2 overflow-x-auto max-w-full mt-3 no-scrollbar">
               {currentTrip.itinerary.map((day, index) => {
                 const isSelected = selectedDate === day.date;
                 return (
@@ -284,7 +289,7 @@ export default function TripDetailPage() {
                     className={`flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                       isSelected
                         ? 'bg-primary-500 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-350 hover:bg-gray-200 dark:hover:bg-gray-650'
                     }`}
                   >
                     Day {index + 1}
