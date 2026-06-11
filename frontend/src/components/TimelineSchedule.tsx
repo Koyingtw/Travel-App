@@ -246,7 +246,7 @@ export default function TimelineSchedule({
         {/* 時間軸和路線資訊區域 */}
         <div className="flex flex-col lg:flex-row">
           {/* 時間軸主要區域（時間標籤 + 行程） */}
-          <div className={`flex-1 min-w-0 ${activeView === 'timeline' ? 'flex' : 'hidden lg:flex'}`}>
+          <div className={`min-w-0 ${activeView === 'timeline' ? 'flex-1 flex' : 'hidden lg:flex lg:flex-1'}`}>
           {/* 時間標籤列 */}
           <div className="w-16 flex-shrink-0 bg-gray-50 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
             <div className="h-10" /> {/* 對齊頂部空白區域 */}
@@ -410,7 +410,7 @@ export default function TimelineSchedule({
           </div>
           
           {/* 右側邊欄 - 路線資訊 */}
-          <div className={`w-full lg:w-64 flex-shrink-0 bg-gray-50 dark:bg-gray-900 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden lg:max-h-screen ${activeView === 'route' ? 'block' : 'hidden lg:block'}`}>
+          <div className={`flex-shrink-0 bg-gray-50 dark:bg-gray-900 lg:border-l border-gray-200 dark:border-gray-700 overflow-y-auto overflow-x-hidden ${activeView === 'route' ? 'w-full block' : 'hidden lg:block lg:w-64 lg:sticky lg:top-0 lg:h-[calc(100vh-280px)] lg:self-start'}`}>
             <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 z-10 p-2 border-b border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 <MapPin size={14} />
@@ -459,7 +459,18 @@ export default function TimelineSchedule({
                     <span className="flex-shrink-0">↓</span>
                     <div className="flex items-center gap-1 min-w-0">
                       <Hotel size={10} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-                      <span className="text-indigo-600 dark:text-indigo-400 truncate">{accommodationItem.place_name}</span>
+                      {accommodationItem.address ? (
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 dark:text-indigo-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
+                        >
+                          {accommodationItem.place_name}
+                        </a>
+                      ) : (
+                        <span className="text-indigo-600 dark:text-indigo-400 truncate">{accommodationItem.place_name}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -484,7 +495,18 @@ export default function TimelineSchedule({
                     <Hotel size={12} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {accommodationItem.place_name}
+                        {accommodationItem.address ? (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          >
+                            {accommodationItem.place_name}
+                          </a>
+                        ) : (
+                          accommodationItem.place_name
+                        )}
                       </div>
                       <div className="text-indigo-600 dark:text-indigo-400 mt-0.5">
                         住宿
@@ -538,7 +560,19 @@ export default function TimelineSchedule({
                     <Hotel size={16} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                        {accommodationItem.place_name}
+                        {accommodationItem.address ? (
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {accommodationItem.place_name}
+                          </a>
+                        ) : (
+                          accommodationItem.place_name
+                        )}
                       </h4>
                       {onEditAccommodation && !isReadOnly && (
                         <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
