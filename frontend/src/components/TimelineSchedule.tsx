@@ -459,18 +459,14 @@ export default function TimelineSchedule({
                     <span className="flex-shrink-0">↓</span>
                     <div className="flex items-center gap-1 min-w-0">
                       <Hotel size={10} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
-                      {accommodationItem.address ? (
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-indigo-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
-                        >
-                          {accommodationItem.place_name}
-                        </a>
-                      ) : (
-                        <span className="text-indigo-600 dark:text-indigo-400 truncate">{accommodationItem.place_name}</span>
-                      )}
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address || accommodationItem.place_name)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
+                      >
+                        {accommodationItem.place_name}
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -495,18 +491,14 @@ export default function TimelineSchedule({
                     <Hotel size={12} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {accommodationItem.address ? (
-                          <a
-                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                          >
-                            {accommodationItem.place_name}
-                          </a>
-                        ) : (
-                          accommodationItem.place_name
-                        )}
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address || accommodationItem.place_name)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        >
+                          {accommodationItem.place_name}
+                        </a>
                       </div>
                       <div className="text-indigo-600 dark:text-indigo-400 mt-0.5">
                         住宿
@@ -560,19 +552,15 @@ export default function TimelineSchedule({
                     <Hotel size={16} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
-                        {accommodationItem.address ? (
-                          <a
-                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {accommodationItem.place_name}
-                          </a>
-                        ) : (
-                          accommodationItem.place_name
-                        )}
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(accommodationItem.address || accommodationItem.place_name)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {accommodationItem.place_name}
+                        </a>
                       </h4>
                       {onEditAccommodation && !isReadOnly && (
                         <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-0.5">
