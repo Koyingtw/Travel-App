@@ -207,7 +207,7 @@ export default function TripDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
               {/* Delete Trip Button */}
               <button
                 onClick={handleDeleteTrip}
@@ -252,7 +252,7 @@ export default function TripDetailPage() {
           <div className="flex border-b border-gray-200 dark:border-gray-700 mt-6">
             <button
               onClick={() => setActiveTab('itinerary')}
-              className={`py-3 px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
+              className={`py-3 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
                 activeTab === 'itinerary'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400 dark:border-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -262,7 +262,7 @@ export default function TripDetailPage() {
             </button>
             <button
               onClick={() => setActiveTab('expenses')}
-              className={`py-3 px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
+              className={`py-3 px-4 sm:px-6 font-semibold border-b-2 transition-all flex items-center space-x-2 text-sm ${
                 activeTab === 'expenses'
                   ? 'border-primary-500 text-primary-600 dark:text-primary-400 dark:border-primary-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'

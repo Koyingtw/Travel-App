@@ -136,46 +136,50 @@ export default function PlaceGroupModal({
                 groups.map((group) => (
                   <div
                     key={group.id}
-                    className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group/item hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className={`p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg group/item hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex ${
+                      editingId === group.id ? 'flex-col gap-3' : 'items-center gap-2'
+                    }`}
                   >
                     {editingId === group.id ? (
-                      <>
+                      <div className="space-y-3 w-full">
                         <input
                           type="text"
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
-                          className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600"
+                          className="w-full px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600"
                         />
-                        <div className="flex gap-1">
+                        <div className="flex gap-1.5 flex-wrap">
                           {DEFAULT_COLORS.map((color) => (
                             <button
                               key={color}
                               onClick={() => setEditingColor(color)}
-                              className={`w-5 h-5 rounded border-2 transition-all ${
+                              className={`w-6 h-6 rounded-md border-2 transition-all ${
                                 editingColor === color
-                                  ? 'border-gray-900 dark:border-gray-100'
-                                  : 'border-transparent'
+                                  ? 'border-gray-900 dark:border-gray-100 scale-110 shadow-sm'
+                                  : 'border-transparent hover:scale-105'
                               }`}
                               style={{ backgroundColor: color }}
                             />
                           ))}
                         </div>
-                        <button
-                          onClick={handleSaveEdit}
-                          className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium transition-colors"
-                        >
-                          保存
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditingId(null);
-                            setEditingName('');
-                          }}
-                          className="px-2 py-1 bg-gray-400 hover:bg-gray-500 text-white rounded text-xs font-medium transition-colors"
-                        >
-                          取消
-                        </button>
-                      </>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingId(null);
+                              setEditingName('');
+                            }}
+                            className="px-3 py-1.5 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded text-xs font-semibold transition-colors"
+                          >
+                            取消
+                          </button>
+                          <button
+                            onClick={handleSaveEdit}
+                            className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-semibold transition-colors"
+                          >
+                            保存
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <div

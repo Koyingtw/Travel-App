@@ -312,7 +312,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
                   <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">（已自動偵測）</span>
                 )}
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {categories.map(({ value, label, emoji }) => (
                   <button
                     key={value}
@@ -360,13 +360,13 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 優先程度
               </label>
-              <div className="flex space-x-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {[0, 1, 2, 3, 4, 5].map((level) => (
                   <button
                     key={level}
                     type="button"
                     onClick={() => setFormData({ ...formData, priority: level })}
-                    className={`flex-1 py-2 rounded-lg border text-sm transition-colors ${
+                    className={`py-2 rounded-lg border text-sm transition-colors text-center ${
                       formData.priority === level
                         ? 'border-primary-500 dark:border-primary-600 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-600 dark:text-gray-400'
@@ -393,7 +393,7 @@ export default function AddPlaceModal({ isOpen, onClose, onAdd, groups = [] }: A
             </div>
 
             {/* Submit */}
-            <div className="flex space-x-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
               <button
                 type="button"
                 onClick={handleClose}

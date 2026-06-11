@@ -41,12 +41,6 @@ export default function NewTripPage() {
 
   const createMutation = useMutation({
     mutationFn: tripApi.create,
-    onSuccess: (data) => {
-      toast.success('行程建立成功！');
-      if (data.data?.trip_id) {
-        navigate(`/trip/${data.data.trip_id}`);
-      }
-    },
     onError: () => {
       toast.error('建立失敗，請稍後再試');
     },
@@ -137,14 +131,14 @@ export default function NewTripPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             建立新行程 ✈️
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             開始規劃您的下一趟冒險之旅
           </p>
         </div>
@@ -152,26 +146,26 @@ export default function NewTripPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Trip Title */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               行程名稱 *
             </label>
             <div className="relative">
-              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="例如：東京 5 天賞櫻之旅"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 required
               />
             </div>
           </div>
 
           {/* Destination Quick Select */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               熱門目的地
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -182,8 +176,8 @@ export default function NewTripPage() {
                   onClick={() => handleDestinationClick(dest.name)}
                   className={`p-3 rounded-lg border text-sm text-center transition-colors ${
                     formData.destination === dest.name
-                      ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                      ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20 text-primary-700 dark:text-primary-300'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-650 text-gray-600 dark:text-gray-400'
                   }`}
                 >
                   <span className="text-xl block mb-1">{dest.image}</span>
@@ -196,38 +190,38 @@ export default function NewTripPage() {
               value={formData.destination}
               onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
               placeholder="或輸入其他目的地"
-              className="w-full mt-3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full mt-3 px-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
             />
           </div>
 
           {/* Dates */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               旅行日期 *
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">開始日期</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">開始日期</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
                   <input
                     type="date"
                     value={formData.start_date}
                     onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">結束日期</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">結束日期</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
                   <input
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                     required
                   />
                 </div>
@@ -236,14 +230,14 @@ export default function NewTripPage() {
           </div>
 
           {/* Base Currency Selection */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               預設結算幣別 *
             </label>
             <select
               value={formData.base_currency}
               onChange={(e) => setFormData({ ...formData, base_currency: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none cursor-pointer"
             >
               <option value="TWD">TWD (NT$)</option>
               <option value="USD">USD ($)</option>
@@ -254,38 +248,38 @@ export default function NewTripPage() {
           </div>
 
           {/* Description */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               行程描述
             </label>
             <div className="relative">
-              <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
+              <FileText className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" size={18} />
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="描述這次旅行的目的或期待..."
                 rows={3}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none outline-none"
               />
             </div>
           </div>
 
           {/* Tags */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               標籤
             </label>
             <div className="flex flex-wrap gap-2 mb-3">
               {formData.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center space-x-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm"
+                  className="inline-flex items-center space-x-1 px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-full text-sm"
                 >
                   <span>{tag}</span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="hover:text-primary-900"
+                    className="hover:text-primary-900 dark:hover:text-primary-100 font-bold ml-1"
                   >
                     ×
                   </button>
@@ -294,20 +288,20 @@ export default function NewTripPage() {
             </div>
             <div className="flex space-x-2">
               <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
                 <input
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
                   placeholder="輸入標籤後按 Enter"
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleAddTag}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-650 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 新增
               </button>
@@ -315,18 +309,18 @@ export default function NewTripPage() {
           </div>
 
           {/* Cover Image URL */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               封面圖片 URL（選填）
             </label>
             <div className="relative">
-              <Image className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Image className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={18} />
               <input
                 type="url"
                 value={formData.cover_image}
                 onChange={(e) => setFormData({ ...formData, cover_image: e.target.value })}
                 placeholder="https://..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
               />
             </div>
             {formData.cover_image && (
@@ -342,11 +336,11 @@ export default function NewTripPage() {
           </div>
 
           {/* Password Protection (Optional) */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Lock className="text-gray-400" size={20} />
-                <label className="text-sm font-medium text-gray-700">
+                <Lock className="text-gray-400 dark:text-gray-500" size={20} />
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   密碼保護（選填）
                 </label>
               </div>
@@ -360,7 +354,7 @@ export default function NewTripPage() {
                   }
                 }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enablePassword ? 'bg-primary-500' : 'bg-gray-200'
+                  enablePassword ? 'bg-primary-500' : 'bg-gray-200 dark:bg-gray-650'
                 }`}
               >
                 <span
@@ -373,7 +367,7 @@ export default function NewTripPage() {
             
             {enablePassword && (
               <div className="space-y-3">
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
                   設定密碼後，需要輸入正確密碼才能編輯此行程
                 </p>
                 <div>
@@ -382,7 +376,7 @@ export default function NewTripPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="輸入密碼（至少 4 個字元）"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                     minLength={4}
                   />
                 </div>
@@ -392,83 +386,22 @@ export default function NewTripPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="確認密碼"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-650 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
                   />
                 </div>
                 {password && confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-red-600">密碼不一致</p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Password Protection (Optional) */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Lock className="text-gray-400" size={20} />
-                <label className="text-sm font-medium text-gray-700">
-                  密碼保護（選填）
-                </label>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setEnablePassword(!enablePassword);
-                  if (enablePassword) {
-                    setPassword('');
-                    setConfirmPassword('');
-                  }
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enablePassword ? 'bg-primary-500' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    enablePassword ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            
-            {enablePassword && (
-              <div className="space-y-3">
-                <p className="text-xs text-gray-500 mb-3">
-                  設定密碼後，需要輸入正確密碼才能編輯此行程
-                </p>
-                <div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="輸入密碼（至少 4 個字元）"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    minLength={4}
-                  />
-                </div>
-                <div>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="確認密碼"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-                {password && confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-red-600">密碼不一致</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">密碼不一致</p>
                 )}
               </div>
             )}
           </div>
 
           {/* Submit */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-3">
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+              className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-650 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               取消
             </button>

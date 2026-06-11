@@ -400,7 +400,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
             </div>
 
             {/* Start Time Control */}
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-900/50">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50 dark:bg-gray-900/50">
               <div className="flex items-center space-x-2">
                 <Clock size={16} className="text-gray-500 dark:text-gray-400" />
                 <span className="text-sm text-gray-700 dark:text-gray-300">開始時間：</span>
@@ -416,7 +416,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   ))}
                 </select>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:justify-end">
                 <button
                   onClick={() => !isReadOnly && setIsAccommodationModalOpen(true)}
                   disabled={!selectedDate || isReadOnly}
@@ -439,7 +439,7 @@ export default function TripPlanner({ isReadOnly = false }: TripPlannerProps) {
                   <PlusCircle size={16} />
                   <span>自訂活動</span>
                 </button>
-
+                
                 {/* Travel Mode Selector */}
                 <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-2 py-1">
                   <span className="text-xs text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">方式：</span>

@@ -428,10 +428,10 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
           </span>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
           <button
             onClick={handleExportExcel}
-            className="flex items-center space-x-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
           >
             <FileSpreadsheet size={16} />
             <span>匯出 Excel</span>
@@ -440,7 +440,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
           {!isReadOnly && (
             <button
               onClick={() => openAddExpenseModal(false)}
-              className="flex items-center space-x-1 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
+              className="flex-1 sm:flex-initial flex items-center justify-center space-x-1 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors font-medium text-sm shadow-sm"
             >
               <Plus size={16} />
               <span>記一筆</span>
@@ -1135,7 +1135,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                       
                       return (
                         <div key={itemIdx} className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 hover:shadow-sm transition-all">
-                          <div className="flex justify-between items-center gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div className="flex-1 min-w-0 flex items-center gap-2">
                               <input
                                 type="text"
@@ -1150,7 +1150,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                               />
                             </div>
                             
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 w-full sm:w-auto">
                               {/* Quantity */}
                               <div className="flex items-center space-x-1">
                                 <span className="text-xs text-gray-400 dark:text-gray-500">數量:</span>
@@ -1164,7 +1164,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                     nextItems[itemIdx] = { ...nextItems[itemIdx], quantity: val };
                                     setExpenseForm(prev => ({ ...prev, items: nextItems }));
                                   }}
-                                  className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-center text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-12"
+                                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-0.5 text-center text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-12"
                                 />
                               </div>
 
@@ -1182,7 +1182,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                     nextItems[itemIdx] = { ...nextItems[itemIdx], amount: val };
                                     setExpenseForm(prev => ({ ...prev, items: nextItems }));
                                   }}
-                                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-1.5 py-0.5 text-right text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-24 font-mono"
+                                  className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-1.5 py-0.5 text-right text-sm font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-24 font-mono"
                                 />
                               </div>
 
@@ -1353,22 +1353,22 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 dark:bg-gray-800/80 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
-              <span className="text-xs text-gray-400 font-medium">
+            <div className="bg-gray-50 dark:bg-gray-800/80 px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium text-center sm:text-left">
                 註：明細加總須等於發票總金額
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setShowItemSplittingWizard(false)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 text-center"
                 >
                   取消
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyItemSplit}
-                  className="px-6 py-2 bg-gradient-to-r from-primary-500 to-indigo-600 hover:shadow-lg text-white font-bold rounded-lg text-sm transition-all"
+                  className="flex-1 sm:flex-none px-6 py-2 bg-gradient-to-r from-primary-500 to-indigo-600 hover:shadow-lg text-white font-bold rounded-lg text-sm transition-all text-center"
                 >
                   套用分帳
                 </button>
