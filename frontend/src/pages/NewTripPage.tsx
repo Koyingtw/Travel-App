@@ -244,6 +244,8 @@ export default function NewTripPage() {
               <option value="EUR">EUR (€)</option>
               <option value="JPY">JPY (¥)</option>
               <option value="CAD">CAD ($)</option>
+              <option value="SEK">SEK (kr)</option>
+              <option value="DKK">DKK (kr)</option>
             </select>
           </div>
 

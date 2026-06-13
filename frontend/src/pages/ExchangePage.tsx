@@ -49,6 +49,9 @@ export default function ExchangePage() {
     { from: 'USD', to: 'JPY', label: '美元 → 日圓' },
     { from: 'EUR', to: 'JPY', label: '歐元 → 日圓' },
     { from: 'USD', to: 'CNY', label: '美元 → 人民幣' },
+    { from: 'EUR', to: 'SEK', label: '歐元 → 瑞典克朗' },
+    { from: 'EUR', to: 'DKK', label: '歐元 → 丹麥克朗' },
+    { from: 'SEK', to: 'DKK', label: '瑞典克朗 → 丹麥克朗' },
   ];
 
   return (

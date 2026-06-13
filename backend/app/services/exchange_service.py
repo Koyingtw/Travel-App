@@ -26,6 +26,8 @@ SUPPORTED_CURRENCIES: Dict[str, SupportedCurrency] = {
     "SGD": SupportedCurrency(code="SGD", name="Singapore Dollar", symbol="$"),
     "CHF": SupportedCurrency(code="CHF", name="Swiss Franc", symbol="CHF"),
     "MXN": SupportedCurrency(code="MXN", name="Mexican Peso", symbol="$"),
+    "SEK": SupportedCurrency(code="SEK", name="Swedish Krona", symbol="kr"),
+    "DKK": SupportedCurrency(code="DKK", name="Danish Krone", symbol="kr"),
 }
 
 # Fallback rates (approximate relative to USD as 1.0, for when API is unavailable)
@@ -44,6 +46,8 @@ FALLBACK_RATES = {
     "SGD": 1.35,
     "CHF": 0.9,
     "MXN": 18.0,
+    "SEK": 10.5,
+    "DKK": 6.9,
 }
 
 

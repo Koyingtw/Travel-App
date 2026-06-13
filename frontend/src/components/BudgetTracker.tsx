@@ -145,6 +145,8 @@ export default function BudgetTracker() {
               <option value="TWD">TWD</option>
               <option value="JPY">JPY</option>
               <option value="CAD">CAD</option>
+              <option value="SEK">SEK</option>
+              <option value="DKK">DKK</option>
             </select>
           </div>
           <select

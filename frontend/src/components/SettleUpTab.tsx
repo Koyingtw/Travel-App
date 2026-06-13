@@ -423,6 +423,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                 <option value="EUR" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">EUR</option>
                 <option value="JPY" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">JPY</option>
                 <option value="CAD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">CAD</option>
+                <option value="SEK" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">SEK</option>
+                <option value="DKK" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">DKK</option>
               </select>
             )}
           </span>
@@ -832,6 +834,8 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                     <option value="TWD">TWD (NT$)</option>
                     <option value="JPY">JPY (¥)</option>
                     <option value="CAD">CAD ($)</option>
+                    <option value="SEK">SEK (kr)</option>
+                    <option value="DKK">DKK (kr)</option>
                   </select>
                 </div>
 
