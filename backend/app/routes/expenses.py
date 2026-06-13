@@ -594,7 +594,7 @@ async def scan_receipt(
             f"Please analyze the text and extract:\n"
             f"1. description (name of restaurant, shop, gas station, or vendor. Look for brand names or locations. For example, if you see '新竹慈雲路店' or similar, identify the vendor as '壽司郎' or 'Sushiro')\n"
             f"2. amount (number only, the final total charged)\n"
-            f"3. currency (3-letter currency code, e.g. TWD, USD, EUR, CAD. If the receipt has details indicating Hsinchu/Taiwan, default to 'TWD')\n"
+            f"3. currency (3-letter currency code, e.g. TWD, USD, EUR, CAD, SEK, DKK. If the receipt has details indicating Hsinchu/Taiwan, default to 'TWD')\n"
             f"4. date (date of the receipt in YYYY-MM-DD format)\n"
             f"5. category (one of: 'flight', 'hotel', 'transport', 'food', 'activity', 'shopping', 'other')\n"
             f"6. items (a list of individual item lines found in the receipt. If none are found, return an empty list. Each item should have:\n"

@@ -22,6 +22,28 @@ const expenseCategories = [
   { value: 'other', label: '其他', emoji: '📝' },
 ];
 
+export const getCurrencySymbol = (code: string) => {
+  const symbols: Record<string, string> = {
+    USD: '$',
+    CAD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    CNY: '¥',
+    TWD: 'NT$',
+    HKD: 'HK$',
+    KRW: '₩',
+    AUD: '$',
+    NZD: '$',
+    SGD: '$',
+    CHF: 'CHF',
+    MXN: '$',
+    SEK: 'kr',
+    DKK: 'kr',
+  };
+  return symbols[code.toUpperCase()] || code;
+};
+
 export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
   const [dashboard, setDashboard] = useState<ExpensesDashboard | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -202,7 +224,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
         // Custom split check sum
         const sum = splits.reduce((acc, s) => acc + (parseFloat(s.amount) || 0), 0);
         if (Math.abs(sum - numAmount) > 0.05) {
-          toast.error(`分帳金額總和 ($${sum.toFixed(2)}) 必須等於總金額 ($${numAmount.toFixed(2)})`);
+          toast.error(`分帳金額總和 (${getCurrencySymbol(expenseForm.currency)}${sum.toFixed(2)}) 必須等於總金額 (${getCurrencySymbol(expenseForm.currency)}${numAmount.toFixed(2)})`);
           return;
         }
         formattedSplits = splits.map(s => ({
@@ -418,13 +440,22 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                 disabled={isChangingCurrency}
                 className="bg-transparent font-bold text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer"
               >
-                <option value="TWD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">TWD</option>
+                 <option value="TWD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">TWD</option>
                 <option value="USD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">USD</option>
                 <option value="EUR" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">EUR</option>
                 <option value="JPY" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">JPY</option>
-                <option value="CAD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">CAD</option>
                 <option value="SEK" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">SEK</option>
                 <option value="DKK" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">DKK</option>
+                <option value="GBP" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">GBP</option>
+                <option value="CNY" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">CNY</option>
+                <option value="HKD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">HKD</option>
+                <option value="KRW" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">KRW</option>
+                <option value="CAD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">CAD</option>
+                <option value="AUD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">AUD</option>
+                <option value="NZD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">NZD</option>
+                <option value="SGD" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">SGD</option>
+                <option value="CHF" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">CHF</option>
+                <option value="MXN" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">MXN</option>
               </select>
             )}
           </span>
@@ -578,7 +609,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                         isNegative ? 'text-red-500 dark:text-red-400' : 
                         'text-gray-500'
                       }`}>
-                        {isPositive ? '+' : ''}{b.balance.toFixed(2)}
+                        {isPositive ? '+' : isNegative ? '-' : ''}{getCurrencySymbol(baseCurrency)}{Math.abs(b.balance).toFixed(2)}
                       </span>
                       <p className="text-[10px] text-gray-400">
                         {isPositive ? '應收款' : isNegative ? '應付款' : '已結清'}
@@ -617,7 +648,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                   
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-extrabold text-primary-600 dark:text-primary-400">
-                      ${s.amount.toFixed(2)} {s.currency}
+                      {getCurrencySymbol(s.currency)}{s.amount.toFixed(2)} <span className="text-xs text-gray-400 font-normal">{s.currency}</span>
                     </span>
                     {!isReadOnly && (
                       <button
@@ -686,7 +717,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                       </td>
                       <td className="py-3 text-center font-medium text-gray-700 dark:text-gray-300">{payer}</td>
                       <td className="py-3 text-right pr-6 font-extrabold text-gray-900 dark:text-white">
-                        ${e.amount.toFixed(2)} <span className="text-xs text-gray-400 font-normal">{e.currency}</span>
+                        {getCurrencySymbol(e.currency)}{e.amount.toFixed(2)} <span className="text-xs text-gray-400 font-normal">{e.currency}</span>
                       </td>
                       <td className="py-3 text-center text-xs text-gray-500 max-w-[150px] truncate">
                         {e.is_settlement ? (
@@ -829,13 +860,22 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                     onChange={(e) => setExpenseForm({ ...expenseForm, currency: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none text-sm"
                   >
+                    <option value="TWD">TWD (NT$)</option>
                     <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
-                    <option value="TWD">TWD (NT$)</option>
                     <option value="JPY">JPY (¥)</option>
-                    <option value="CAD">CAD ($)</option>
                     <option value="SEK">SEK (kr)</option>
                     <option value="DKK">DKK (kr)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="CNY">CNY (¥)</option>
+                    <option value="HKD">HKD (HK$)</option>
+                    <option value="KRW">KRW (₩)</option>
+                    <option value="CAD">CAD ($)</option>
+                    <option value="AUD">AUD ($)</option>
+                    <option value="NZD">NZD ($)</option>
+                    <option value="SGD">SGD ($)</option>
+                    <option value="CHF">CHF (CHF)</option>
+                    <option value="MXN">MXN ($)</option>
                   </select>
                 </div>
 
@@ -940,7 +980,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                           return (
                             <div key={idx} className="flex justify-between border-b border-gray-50 dark:border-gray-800/40 pb-0.5 last:border-0 last:pb-0">
                               <span className="truncate max-w-[70%]">{item.name} (x{item.quantity}) → {names || '無'}</span>
-                              <span className="font-semibold">${item.amount.toFixed(2)}</span>
+                              <span className="font-semibold">{getCurrencySymbol(expenseForm.currency)}{item.amount.toFixed(2)}</span>
                             </div>
                           );
                         })}
@@ -1036,11 +1076,11 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                             <div className="flex items-center space-x-1.5">
                               {expenseForm.split_type === 'equal' ? (
                                 <span className="text-xs text-gray-400 font-mono font-bold">
-                                  ${expenseForm.amount ? round(parseFloat(expenseForm.amount) / expenseForm.splits.length).toFixed(2) : '0.00'}
+                                  {getCurrencySymbol(expenseForm.currency)}{expenseForm.amount ? round(parseFloat(expenseForm.amount) / expenseForm.splits.length).toFixed(2) : '0.00'}
                                 </span>
                               ) : (
                                 <div className="flex items-center space-x-1">
-                                  <span className="text-xs text-gray-400 font-bold">$</span>
+                                  <span className="text-xs text-gray-400 font-bold">{getCurrencySymbol(expenseForm.currency)}</span>
                                   <input
                                     type="number"
                                     step="0.01"
@@ -1114,7 +1154,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                 </div>
                 <div className="text-right">
                   <div className="text-lg font-bold text-primary-600 dark:text-primary-400 font-mono">
-                    {expenseForm.currency} ${parseFloat(expenseForm.amount || '0').toFixed(2)}
+                    {getCurrencySymbol(expenseForm.currency)}{parseFloat(expenseForm.amount || '0').toFixed(2)} <span className="text-[10px] text-gray-400 font-normal">({expenseForm.currency})</span>
                   </div>
                   <div className="text-[10px] text-gray-400">總金額</div>
                 </div>
@@ -1174,7 +1214,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
 
                               {/* Amount */}
                               <div className="flex items-center space-x-1">
-                                <span className="text-sm font-bold text-gray-500">$</span>
+                                <span className="text-sm font-bold text-gray-500">{getCurrencySymbol(expenseForm.currency)}</span>
                                 <input
                                   type="number"
                                   step="0.01"
@@ -1242,7 +1282,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                                   <span>{m.name}</span>
                                   {isAssigned && (
                                     <span className="text-[10px] text-primary-500/80 font-mono">
-                                      (${shareAmount.toFixed(2)})
+                                      ({getCurrencySymbol(expenseForm.currency)}{shareAmount.toFixed(2)})
                                     </span>
                                   )}
                                 </button>
@@ -1313,17 +1353,17 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                   return (
                     <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-sm">
                       <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-medium">
-                        <span>⚠️ 明細總和 ($${itemsSum.toFixed(2)}) 與開支金額 ($${mainAmount.toFixed(2)}) 不符。</span>
+                        <span>⚠️ 明細總和 ({getCurrencySymbol(expenseForm.currency)}{itemsSum.toFixed(2)}) 與開支金額 ({getCurrencySymbol(expenseForm.currency)}{mainAmount.toFixed(2)}) 不符。</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => {
                           setExpenseForm(prev => ({ ...prev, amount: itemsSum.toFixed(2) }));
-                          toast.success(`開支總金額已同步為 $${itemsSum.toFixed(2)}`);
+                          toast.success(`開支總金額已同步為 ${getCurrencySymbol(expenseForm.currency)}${itemsSum.toFixed(2)}`);
                         }}
                         className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs font-bold transition-colors shadow-sm shrink-0"
                       >
-                        將總金額設為 $${itemsSum.toFixed(2)}
+                        將總金額設為 {getCurrencySymbol(expenseForm.currency)}{itemsSum.toFixed(2)}
                       </button>
                     </div>
                   );
@@ -1347,7 +1387,7 @@ export default function SettleUpTab({ tripId, isReadOnly }: SettleUpTabProps) {
                       <div key={m.id} className="bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between">
                         <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{m.name}</span>
                         <span className="text-base font-bold text-gray-950 dark:text-white font-mono mt-1">
-                          ${totalOwed.toFixed(2)}
+                          {getCurrencySymbol(expenseForm.currency)}{totalOwed.toFixed(2)}
                         </span>
                       </div>
                     );

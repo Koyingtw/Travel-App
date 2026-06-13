@@ -243,9 +243,18 @@ export default function NewTripPage() {
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
               <option value="JPY">JPY (¥)</option>
-              <option value="CAD">CAD ($)</option>
               <option value="SEK">SEK (kr)</option>
               <option value="DKK">DKK (kr)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="CNY">CNY (¥)</option>
+              <option value="HKD">HKD (HK$)</option>
+              <option value="KRW">KRW (₩)</option>
+              <option value="CAD">CAD ($)</option>
+              <option value="AUD">AUD ($)</option>
+              <option value="NZD">NZD ($)</option>
+              <option value="SGD">SGD ($)</option>
+              <option value="CHF">CHF (CHF)</option>
+              <option value="MXN">MXN ($)</option>
             </select>
           </div>
 

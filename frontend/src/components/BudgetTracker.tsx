@@ -4,6 +4,7 @@ import { useTripStore } from '../store/tripStore';
 import { tripApi } from '../services/api';
 import type { BudgetItem } from '../types';
 import toast from 'react-hot-toast';
+import { getCurrencySymbol } from './SettleUpTab';
 
 const budgetCategories = [
   { value: 'flight', label: '機票', emoji: '✈️' },
@@ -48,6 +49,16 @@ export default function BudgetTracker() {
     return { total, paid, unpaid: total - paid, byCategory };
   }, [currentBudget]);
 
+  const handleOpenAdd = () => {
+    setNewItem({
+      item: '',
+      cost: '',
+      category: 'other',
+      currency: currentTrip?.base_currency || 'USD',
+    });
+    setIsAdding(true);
+  };
+
   const handleAddItem = async () => {
     if (!currentTrip || !selectedDate || !newItem.item || !newItem.cost) return;
 
@@ -62,7 +73,7 @@ export default function BudgetTracker() {
     try {
       await tripApi.addBudgetItem(currentTrip._id, selectedDate, budgetItem);
       await fetchTrip(currentTrip._id);
-      setNewItem({ item: '', cost: '', category: 'other', currency: 'USD' });
+      setNewItem({ item: '', cost: '', category: 'other', currency: currentTrip?.base_currency || 'USD' });
       setIsAdding(false);
       toast.success('已新增預算項目');
     } catch (error) {
@@ -86,7 +97,7 @@ export default function BudgetTracker() {
           <h3 className="font-semibold text-gray-900">預算追蹤</h3>
         </div>
         <button
-          onClick={() => setIsAdding(true)}
+          onClick={handleOpenAdd}
           className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
         >
           <Plus size={16} />
@@ -99,19 +110,19 @@ export default function BudgetTracker() {
           <div>
             <p className="text-xs text-gray-500 mb-1">總預算</p>
             <p className="text-lg font-bold text-gray-900">
-              ${totals.total.toFixed(2)}
+              {getCurrencySymbol(currentTrip?.base_currency || 'USD')}{totals.total.toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500 mb-1">已付款</p>
             <p className="text-lg font-bold text-green-600">
-              ${totals.paid.toFixed(2)}
+              {getCurrencySymbol(currentTrip?.base_currency || 'USD')}{totals.paid.toFixed(2)}
             </p>
           </div>
           <div>
             <p className="text-xs text-gray-500 mb-1">未付款</p>
             <p className="text-lg font-bold text-orange-500">
-              ${totals.unpaid.toFixed(2)}
+              {getCurrencySymbol(currentTrip?.base_currency || 'USD')}{totals.unpaid.toFixed(2)}
             </p>
           </div>
         </div>
@@ -140,13 +151,22 @@ export default function BudgetTracker() {
               onChange={(e) => setNewItem({ ...newItem, currency: e.target.value })}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             >
+              <option value="TWD">TWD</option>
               <option value="USD">USD</option>
               <option value="EUR">EUR</option>
-              <option value="TWD">TWD</option>
               <option value="JPY">JPY</option>
-              <option value="CAD">CAD</option>
               <option value="SEK">SEK</option>
               <option value="DKK">DKK</option>
+              <option value="GBP">GBP</option>
+              <option value="CNY">CNY</option>
+              <option value="HKD">HKD</option>
+              <option value="KRW">KRW</option>
+              <option value="CAD">CAD</option>
+              <option value="AUD">AUD</option>
+              <option value="NZD">NZD</option>
+              <option value="SGD">SGD</option>
+              <option value="CHF">CHF</option>
+              <option value="MXN">MXN</option>
             </select>
           </div>
           <select
@@ -200,7 +220,7 @@ export default function BudgetTracker() {
                 </div>
                 <div className="flex items-center space-x-3">
                   <span className={`font-semibold ${item.paid ? 'text-gray-400' : 'text-gray-900'}`}>
-                    ${item.cost.toFixed(2)} {item.currency}
+                    {getCurrencySymbol(item.currency)}{item.cost.toFixed(2)}
                   </span>
                   <span className={`w-5 h-5 rounded-full flex items-center justify-center ${
                     item.paid ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
